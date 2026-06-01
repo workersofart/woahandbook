@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOA — Project & Team Management</title>
+<style>
+  :root{
+    --ink:#1a1815; --paper:#f4f1ea; --card:#fffdf8; --line:#ddd6c8;
+    --muted:#7a7468; --accent:#b5491f; --accent2:#1d6b58; --gold:#a8842c;
+    --blue:#2a5a8c; --red:#a32d2d; --amber:#9a6a0c; --green:#3b6d11;
+    --radius:10px; --shadow:0 1px 0 rgba(0,0,0,.04),0 8px 24px rgba(40,30,15,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#ede8df; --paper:#1a1815; --card:#232019; --line:#3a352b;
+      --muted:#9b9486; --accent:#e07a4a; --accent2:#4cae93; --gold:#d4ab4e;
+      --blue:#6ba3d8; --red:#e26b6b; --amber:#d4a23e; --green:#8fc04e;
+      --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 24px rgba(0,0,0,.35); }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px 80px}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;
+    padding:30px 0 18px;border-bottom:2px solid var(--ink);margin-bottom:4px;gap:20px;flex-wrap:wrap}
+  .brand h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .brand .sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--muted);margin-top:7px}
+  .clock{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);text-align:right}
+  .clock b{color:var(--ink);font-weight:600}
+  nav.tabs{display:flex;gap:2px;flex-wrap:wrap;margin:16px 0 22px;
+    font-family:ui-sans-serif,system-ui,sans-serif}
+  nav.tabs button{font-family:inherit;font-size:13px;font-weight:500;border:none;background:none;
+    color:var(--muted);padding:9px 15px;border-radius:7px;cursor:pointer;transition:.15s;white-space:nowrap}
+  nav.tabs button:hover{color:var(--ink);background:rgba(120,110,90,.08)}
+  nav.tabs button.on{background:var(--ink);color:var(--paper)}
+  .view{display:none;animation:fade .3s ease}
+  .view.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .vhead{margin:6px 0 18px}
+  .vhead h2{font-size:23px;font-weight:700;letter-spacing:-.3px}
+  .vhead p{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--muted);margin-top:3px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px 22px;margin-bottom:18px}
+  .card h3{font-size:16px;font-weight:700;margin-bottom:3px}
+  .card .ch-sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);margin-bottom:14px}
+
+  /* form */
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;
+    font-family:ui-sans-serif,system-ui,sans-serif}
+  .fld{display:flex;flex-direction:column;gap:4px}
+  .fld.span2{grid-column:span 2}
+  .fld label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  input,select,textarea{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:8px 10px;width:100%;transition:.15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(181,73,31,.13)}
+  .actions{display:flex;gap:9px;margin-top:14px;align-items:center;flex-wrap:wrap;
+    font-family:ui-sans-serif,system-ui,sans-serif}
+  button.btn{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;cursor:pointer;
+    border-radius:7px;padding:9px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);transition:.15s}
+  button.btn:hover{opacity:.85}
+  button.btn.ghost{background:none;color:var(--ink)}
+  button.btn.ghost:hover{background:rgba(120,110,90,.08);opacity:1}
+  button.btn.sm{padding:5px 11px;font-size:12px}
+  .hint{font-size:12px;color:var(--muted)}
+
+  /* metric cards */
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:11px;margin-bottom:18px}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--shadow)}
+  .metric .ml{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10.5px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--muted);font-weight:600}
+  .metric .mv{font-size:27px;font-weight:800;letter-spacing:-.5px;margin-top:4px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .metric .mvs{font-size:12px;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-weight:500}
+  .metric.accent .mv{color:var(--accent)}
+  .metric.good .mv{color:var(--green)}
+  .metric.warn .mv{color:var(--amber)}
+  .metric.bad .mv{color:var(--red)}
+
+  /* table */
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-family:ui-sans-serif,system-ui,sans-serif;font-size:12.8px}
+  thead th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    font-weight:700;padding:11px 12px;border-bottom:1.5px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+  thead th:hover{color:var(--ink)}
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:rgba(120,110,90,.045)}
+  td .tt{font-weight:600;font-size:13px;color:var(--ink)}
+  td .meta{font-size:11px;color:var(--muted)}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .pill.dot::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px;background:currentColor}
+  .st-todo{background:rgba(122,116,104,.16);color:var(--muted)}
+  .st-prog{background:rgba(42,90,140,.15);color:var(--blue)}
+  .st-block{background:rgba(163,45,45,.15);color:var(--red)}
+  .st-done{background:rgba(59,109,17,.16);color:var(--green)}
+  .pr-high{background:rgba(163,45,45,.13);color:var(--red)}
+  .pr-med{background:rgba(154,106,12,.15);color:var(--amber)}
+  .pr-low{background:rgba(122,116,104,.14);color:var(--muted)}
+  .tag{display:inline-block;font-family:ui-sans-serif,system-ui,sans-serif;font-size:10.5px;
+    background:rgba(120,110,90,.1);color:var(--muted);padding:2px 7px;border-radius:5px}
+  .due-over{color:var(--red);font-weight:700}
+  .due-soon{color:var(--amber);font-weight:700}
+  .row-act{display:flex;gap:5px}
+  .icbtn{font-family:ui-sans-serif,system-ui,sans-serif;border:1px solid var(--line);background:var(--paper);
+    color:var(--muted);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:1;transition:.15s}
+  .icbtn:hover{color:var(--ink);border-color:var(--muted)}
+  .icbtn.del:hover{color:var(--red);border-color:var(--red)}
+
+  .filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .filters select,.filters input{width:auto;min-width:130px;font-size:12.5px;padding:7px 9px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--card)}
+  .seg button{font-family:ui-sans-serif,system-ui,sans-serif;border:none;background:none;color:var(--muted);
+    font-size:12px;font-weight:600;padding:7px 13px;cursor:pointer}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px}
+
+  /* groups */
+  .grp{margin-bottom:20px}
+  .grp-h{display:flex;align-items:center;gap:10px;margin:0 0 9px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .grp-h .gn{font-size:15px;font-weight:700}
+  .grp-h .gc{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);
+    background:rgba(120,110,90,.1);padding:1px 8px;border-radius:20px;font-weight:600}
+  .bar{height:6px;border-radius:4px;background:rgba(120,110,90,.16);overflow:hidden;flex:1;max-width:160px}
+  .bar > i{display:block;height:100%;background:var(--accent2);border-radius:4px}
+
+  /* leadership domains */
+  .dom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .dom{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;box-shadow:var(--shadow)}
+  .dom .dh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .dom .dn{font-size:14px;font-weight:700;text-transform:capitalize}
+  .dom .dpct{font-family:ui-sans-serif,system-ui,sans-serif;font-size:18px;font-weight:800}
+  .dom .dl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;margin-top:7px}
+
+  /* report */
+  .report{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:34px 40px;box-shadow:var(--shadow);max-width:840px;margin:0 auto}
+  .report .rh{text-align:center;border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:24px}
+  .report .rh .rt{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif}
+  .report .rh h2{font-size:27px;font-weight:800;margin:7px 0 3px}
+  .report .rh .rp{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--muted)}
+  .report h4{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+    font-family:ui-sans-serif,system-ui,sans-serif;font-weight:700;margin:26px 0 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .report p.lead{font-size:15.5px;line-height:1.7}
+  .report .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:13px}
+  .report .rstat{text-align:center;padding:13px;border:1px solid var(--line);border-radius:8px}
+  .report .rstat .v{font-size:26px;font-weight:800;font-family:ui-sans-serif,system-ui,sans-serif}
+  .report .rstat .l{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;margin-top:3px}
+  .report ul{margin:0 0 0 4px;list-style:none}
+  .report ul li{padding:6px 0 6px 20px;position:relative;font-size:14.5px;border-bottom:1px dashed var(--line)}
+  .report ul li:last-child{border-bottom:none}
+  .report ul li::before{content:"";position:absolute;left:3px;top:13px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .rfoot{text-align:center;margin-top:30px;padding-top:16px;border-top:1px solid var(--line);
+    font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted)}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:760px){.twocol{grid-template-columns:1fr}.fld.span2{grid-column:span 1}.report{padding:24px 20px}}
+
+  .note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);
+    background:rgba(120,110,90,.07);border:1px dashed var(--line);border-radius:8px;padding:10px 13px;margin-bottom:14px}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);
+    color:var(--paper);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;
+    padding:11px 20px;border-radius:9px;opacity:0;transition:.3s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .seedbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .blockwhy{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--red);margin-top:2px}
+  .legend{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>WOA Operations</h1>
+      <div class="sub">Single Source of Truth · Project &amp; Team Management</div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-v="entry" class="on">Task Entry</button>
+    <button data-v="project">Project View</button>
+    <button data-v="architect">Architect View</button>
+    <button data-v="leadership">Leadership View</button>
+    <button data-v="weekly">Weekly Review</button>
+    <button data-v="monthly">Monthly Report</button>
+    <button data-v="sync">Sync &amp; Settings</button>
+  </nav>
+
+  <!-- ============ ENTRY ============ -->
+  <section class="view on" id="v-entry">
+    <div class="vhead"><h2>Task Entry</h2>
+      <p>One task, entered once. Everything else in this app is generated from here — no duplicate effort.</p></div>
+
+    <div class="note" id="mondayNote"></div>
+
+    <div class="card">
+      <h3 id="formTitle">New Task</h3>
+      <div class="ch-sub">Leadership tasks don't need a project. Switch the work type to skip it.</div>
+
+      <div class="seg" style="margin-bottom:14px">
+        <button id="typeProject" class="on" onclick="setWorkType('project')">Project Task</button>
+        <button id="typeLeader" onclick="setWorkType('leadership')">Leadership Task</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="fld span2"><label>Task</label><input id="f_title" placeholder="What needs to get done"></div>
+        <div class="fld" id="wrap_project"><label>Project</label>
+          <select id="f_project" onchange="handleAddNew(this,'project')"></select>
+        </div>
+        <div class="fld" id="wrap_domain" style="display:none"><label>Leadership Domain</label>
+          <select id="f_domain">
+            <option>business growth</option><option>content</option><option>hiring</option>
+            <option>strategy</option><option>office development</option><option>design direction</option>
+          </select>
+        </div>
+        <div class="fld"><label>Assigned To</label>
+          <select id="f_owner" onchange="handleAddNew(this,'owner')"></select>
+        </div>
+        <div class="fld"><label>Priority</label>
+          <select id="f_priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
+        </div>
+        <div class="fld"><label>Status</label>
+          <select id="f_status" onchange="toggleBlocker()">
+            <option>To Do</option><option>In Progress</option><option>Blocked</option><option>Done</option>
+          </select>
+        </div>
+        <div class="fld"><label>Due Date</label><input id="f_due" type="date"></div>
+        <div class="fld"><label>Category</label>
+          <input id="f_category" list="catList" placeholder="e.g. Drawings, Site, Admin">
+          <datalist id="catList"></datalist>
+        </div>
+        <div class="fld"><label>Dependency (waiting on)</label>
+          <select id="f_dep"><option value="">— none —</option></select>
+        </div>
+        <div class="fld" id="wrap_blocker" style="display:none"><label>Blocker Type</label>
+          <select id="f_blocker">
+            <option>Client</option><option>Approval</option><option>Vendor / Consultant</option>
+            <option>Information</option><option>Internal Capacity</option><option>Budget</option>
+            <option>Permitting / Authority</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="saveTask()" id="saveBtn">Add Task</button>
+        <button class="btn ghost" onclick="resetForm()">Clear</button>
+        <span class="hint" id="editHint"></span>
+      </div>
+    </div>
+
+    <div class="seedbar">
+      <span class="hint">Data is saved automatically to this app and persists across sessions.</span>
+      <button class="btn ghost sm" onclick="loadSample()">Load sample data</button>
+      <button class="btn ghost sm" onclick="wipeAll()">Clear all</button>
+    </div>
+
+    <div class="filters">
+      <input id="search" placeholder="Search tasks…" oninput="render()">
+      <select id="fType" onchange="render()"><option value="">All work types</option><option value="project">Project</option><option value="leadership">Leadership</option></select>
+      <select id="fStatus" onchange="render()"><option value="">All statuses</option><option>To Do</option><option>In Progress</option><option>Blocked</option><option>Done</option></select>
+      <select id="fOwner" onchange="render()"><option value="">All assignees</option></select>
+    </div>
+
+    <div class="tbl-wrap">
+      <table id="allTbl">
+        <thead><tr>
+          <th onclick="setSort('title')">Task</th><th onclick="setSort('group')">Project / Domain</th>
+          <th onclick="setSort('owner')">Assigned To</th><th onclick="setSort('priority')">Priority</th>
+          <th onclick="setSort('status')">Status</th><th onclick="setSort('due')">Due</th>
+          <th onclick="setSort('category')">Category</th><th>Dependency</th><th></th>
+        </tr></thead>
+        <tbody id="allBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ PROJECT ============ -->
+  <section class="view" id="v-project">
+    <div class="vhead"><h2>Project View</h2><p>Project tasks grouped by project, with live completion bars.</p></div>
+    <div class="metrics" id="projMetrics"></div>
+    <div id="projGroups"></div>
+  </section>
+
+  <!-- ============ ARCHITECT ============ -->
+  <section class="view" id="v-architect">
+    <div class="vhead"><h2>Architect View</h2><p>Per-owner workload — what each person is carrying, completing, and blocked on.</p></div>
+    <div id="architectGroups"></div>
+  </section>
+
+  <!-- ============ LEADERSHIP ============ -->
+  <section class="view" id="v-leadership">
+    <div class="vhead"><h2>Leadership View</h2><p>The six leadership domains — business growth, content, hiring, strategy, office development, design direction.</p></div>
+    <div class="metrics" id="leadMetrics"></div>
+    <div class="dom-grid" id="leadDomains"></div>
+    <div style="margin-top:18px" class="tbl-wrap">
+      <table><thead><tr><th>Task</th><th>Domain</th><th>Assigned To</th><th>Priority</th><th>Status</th><th>Due</th></tr></thead>
+      <tbody id="leadBody"></tbody></table>
+    </div>
+  </section>
+
+  <!-- ============ WEEKLY ============ -->
+  <section class="view" id="v-weekly">
+    <div class="vhead"><h2>Weekly Review</h2><p>This week at a glance — assigned, completed, blocked, and what's due. Blocker-adjusted rate excludes work stuck on others.</p></div>
+
+    <div class="card">
+      <h3>WhatsApp group digest</h3>
+      <div class="ch-sub">One message for the whole team, grouped by owner. Copy it and paste into your team group.</div>
+      <div class="actions" style="margin-top:0">
+        <button class="btn" onclick="copyDigest()">Copy weekly digest</button>
+        <a class="btn ghost" id="waOpen" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Open in WhatsApp</a>
+        <label class="hint" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="digOpenOnly" onchange="buildDigest()" style="width:auto;margin:0">Open tasks only</label>
+      </div>
+      <div class="legend">Tip: “Open in WhatsApp” lets you pick the group, then long-press to paste. The Copy button is the reliable path.</div>
+      <pre id="digestBox" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.55;white-space:pre-wrap;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 15px;margin-top:13px;max-height:340px;overflow:auto;color:var(--ink)"></pre>
+    </div>
+
+    <div class="metrics" id="weekMetrics"></div>
+    <div class="twocol">
+      <div class="card"><h3>Blocked — needs unblocking</h3><div class="ch-sub">Grouped by blocker type</div><div id="weekBlocked"></div></div>
+      <div class="card"><h3>Due this week</h3><div class="ch-sub">Open tasks with a due date in the next 7 days</div><div id="weekDue"></div></div>
+    </div>
+    <div class="card"><h3>Completed this period</h3><div class="ch-sub">Recently finished work</div><div id="weekDone"></div></div>
+  </section>
+
+  <!-- ============ MONTHLY ============ -->
+  <section class="view" id="v-monthly">
+    <div class="vhead"><h2>Monthly Performance Report</h2>
+      <p>Generated automatically from the same dataset. No manual compilation.</p></div>
+    <div class="actions" style="margin-bottom:16px">
+      <span class="hint">Reporting period:</span>
+      <select id="monthSel" onchange="render()" style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:8px 10px;width:auto;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink)"></select>
+      <button class="btn ghost sm" onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <div id="reportOut"></div>
+  </section>
+
+  <!-- ============ SYNC ============ -->
+  <section class="view" id="v-sync">
+    <div class="vhead"><h2>Sync &amp; Settings</h2><p>Connect this dashboard to a shared Google Sheet so the whole team sees the same live data.</p></div>
+
+    <div class="card">
+      <h3>Connection</h3>
+      <div class="ch-sub">Paste the web-app URL from your Google Sheet's Apps Script (steps below). Everyone who uses this dashboard with the same URL shares one source of truth.</div>
+      <div class="fld" style="font-family:ui-sans-serif,system-ui,sans-serif">
+        <label>Google Sheet web-app URL</label>
+        <input id="syncUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="saveSyncUrl()">Save &amp; connect</button>
+        <button class="btn ghost" onclick="pullNow()">Pull from sheet</button>
+        <button class="btn ghost" onclick="pushNow()">Push to sheet</button>
+        <span class="hint" id="syncState">Not connected — data is stored only in this browser.</span>
+      </div>
+      <div class="legend" id="syncMeta"></div>
+      <label class="hint" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-top:10px"><input type="checkbox" id="autoSync" onchange="toggleAuto()" style="width:auto;margin:0">Auto-sync: pull on open, push on every change</label>
+    </div>
+
+    <div class="card">
+      <h3>One-time setup — 5 minutes</h3>
+      <div class="ch-sub">Do this once on the Google account that owns the team sheet.</div>
+      <ol style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;line-height:1.85;margin:0 0 0 18px;color:var(--ink)">
+        <li>Create a Google Sheet (any blank one). Name it e.g. <b>WOA Tasks</b>.</li>
+        <li>In the sheet menu: <b>Extensions → Apps Script</b>.</li>
+        <li>Delete whatever code is there, paste the script below, click the <b>Save</b> (disk) icon.</li>
+        <li>Click <b>Deploy → New deployment</b>. For type, choose <b>Web app</b>.</li>
+        <li>Set <b>Execute as: Me</b>, and <b>Who has access: Anyone</b>. Click <b>Deploy</b>.</li>
+        <li>Authorize when prompted (it's your own script — approve it).</li>
+        <li>Copy the <b>Web app URL</b> it gives you, paste it into the Connection box above, and hit <b>Save &amp; connect</b>.</li>
+      </ol>
+      <div class="note" style="margin-top:12px;border-color:var(--amber);color:var(--ink)"><b>Important — this is a new script version.</b> Re-paste the code below over your existing Apps Script, save, then <b>Deploy → Manage deployments → ✎ edit → Version: New version → Deploy</b> (the “New version” step is what makes it live — your URL stays the same). After the next <b>Push to sheet</b>, a styled <b>Task Review</b> tab appears: tasks grouped by date, checkboxes, priority colours, and a % completed line per group. The old JSON sheet is no longer used and can be deleted.</div>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn" onclick="copyScript()">Copy Apps Script</button>
+        <span class="hint">Paste this into the Apps Script editor in step 3.</span>
+      </div>
+      <pre id="scriptBox" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.5;white-space:pre;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 15px;margin-top:12px;max-height:300px;overflow:auto;color:var(--ink)"></pre>
+      <div class="note" style="margin-top:14px">Heads-up on sharing: setting access to “Anyone” means anyone with the long, unguessable URL can read and write the sheet. For a small studio that's usually fine, but treat the URL like a password — share it only inside your team. If you need stricter control later, this is the point where a proper login-based backend becomes worth it.</div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='woa:tasks:v1';
+const URLKEY='woa:syncurl:v1';
+const AUTOKEY='woa:autosync:v1';
+let tasks=[];
+let editId=null;
+let workType='project';
+let sortKey='due', sortDir=1;
+let syncUrl='', autoSync=false, syncing=false;
+
+/* ---------- predefined dropdown lists (editable, persisted) ---------- */
+const OWNERKEY='woa:owners:v1', PROJKEY='woa:projects:v1';
+let OWNERS=['Abhishek','Raja','Abhi','Subin','Alex'];
+let PROJECTS=['058_JewelOne Flagship','029_HBTS','042_FA Kannur','047_School'];
+
+/* ---------- local storage: window.storage (Claude viewer) OR localStorage (downloaded file) ---------- */
+function hasWS(){ try{ return typeof window.storage!=='undefined' && window.storage; }catch(e){ return false; } }
+async function lsGet(k){
+  if(hasWS()){ try{ const r=await window.storage.get(k); return r&&r.value?r.value:null; }catch(e){} }
+  try{ return localStorage.getItem(k); }catch(e){ return null; }
+}
+async function lsSet(k,v){
+  if(hasWS()){ try{ await window.storage.set(k,v); }catch(e){} }
+  try{ localStorage.setItem(k,v); }catch(e){}
+}
+async function load(){
+  const v=await lsGet(KEY); tasks=v?JSON.parse(v):[];
+  syncUrl=(await lsGet(URLKEY))||'';
+  autoSync=(await lsGet(AUTOKEY))==='1';
+  const o=await lsGet(OWNERKEY); if(o){ try{ OWNERS=JSON.parse(o); }catch(e){} }
+  const p=await lsGet(PROJKEY); if(p){ try{ PROJECTS=JSON.parse(p); }catch(e){} }
+}
+async function saveLists(){
+  await lsSet(OWNERKEY, JSON.stringify(OWNERS));
+  await lsSet(PROJKEY, JSON.stringify(PROJECTS));
+}
+async function persist(){
+  await lsSet(KEY, JSON.stringify(tasks));
+  if(autoSync && syncUrl && !syncing) pushNow(true);
+}
+
+/* ---------- Google Sheets sync ---------- */
+function setSyncState(msg,ok){
+  const el=document.getElementById('syncState'); if(!el) return;
+  el.textContent=msg; el.style.color= ok===true?'var(--green)': ok===false?'var(--red)':'var(--muted)';
+}
+async function saveSyncUrl(){
+  const u=document.getElementById('syncUrl').value.trim();
+  if(u && !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(u)){
+    if(!confirm('That doesn\'t look like an Apps Script /exec URL. Save anyway?')) return;
+  }
+  syncUrl=u; await lsSet(URLKEY,u);
+  if(!u){ setSyncState('Disconnected — data stored only in this browser.'); return; }
+  setSyncState('Connecting…'); await pullNow();
+}
+async function pushNow(silent){
+  if(!syncUrl){ if(!silent) toast('Connect a Google Sheet first'); return; }
+  // Safety: never let an auto-push silently wipe the sheet with an empty list.
+  if(!tasks.length){
+    if(silent){ return; }
+    if(!confirm('You have 0 tasks. Pushing will leave the sheet empty. Continue?')) return;
+  }
+  syncing=true; if(!silent) setSyncState('Pushing…');
+  try{
+    // Write via GET query (?action=save&data=...). GET to Apps Script is allowed
+    // cross-origin and returns readable JSON, so we can confirm the write.
+    const payload=encodeURIComponent(JSON.stringify({tasks}));
+    if(payload.length>7000){
+      // Too big for a URL — send via POST (no-cors; response unreadable, verify by pulling).
+      await fetch(syncUrl,{method:'POST',mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({action:'save',tasks})});
+      const now=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      setSyncState('Pushed at '+now+' (large set) — hit Pull to verify.');
+      syncing=false; return;
+    }
+    const r=await fetch(syncUrl+'?action=save&t='+Date.now()+'&data='+payload);
+    const txt=await r.text();
+    let ok=false; try{ ok=JSON.parse(txt).ok===true; }catch(_){}
+    const now=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    if(ok){
+      setSyncState('Synced ✓ pushed at '+now,true);
+      document.getElementById('syncMeta').textContent=tasks.length+' tasks written to the shared sheet.';
+    } else {
+      setSyncState('Pushed at '+now+' (unconfirmed) — hit Pull to verify.');
+    }
+  }catch(e){ setSyncState('Push failed — network error. Check your connection.',false); }
+  syncing=false;
+}
+async function pullNow(){
+  if(!syncUrl){ toast('Connect a Google Sheet first'); return; }
+  syncing=true; setSyncState('Pulling…');
+  try{
+    // GET as plain text then parse — avoids strict JSON content-type / CORS issues.
+    const r=await fetch(syncUrl+'?action=load&t='+Date.now());
+    const txt=await r.text();
+    let data; try{ data=JSON.parse(txt); }catch(_){ throw new Error('non-json'); }
+    if(Array.isArray(data.tasks)){
+      // Don't let an empty remote silently wipe local work.
+      if(data.tasks.length===0 && tasks.length>0){
+        setSyncState('Sheet is empty but this device has '+tasks.length+' tasks. Use Push to upload them.',false);
+        syncing=false; return;
+      }
+      tasks=data.tasks;
+      await lsSet(KEY,JSON.stringify(tasks));
+      render();
+      const now=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      setSyncState('Synced ✓ pulled at '+now,true);
+      document.getElementById('syncMeta').textContent=tasks.length+' tasks loaded from the shared sheet.';
+    } else { setSyncState('Connected, but sheet returned no task list.',false); }
+  }catch(e){
+    setSyncState('Pull failed — if the URL works in a browser tab, redeploy the script (see fix below).',false);
+  }
+  syncing=false;
+}
+async function toggleAuto(){
+  autoSync=document.getElementById('autoSync').checked;
+  await lsSet(AUTOKEY, autoSync?'1':'0');
+  if(autoSync && syncUrl) pushNow(true);
+}
+
+const APPS_SCRIPT=`// ==== WOA Tasks sync v3 — styled review sheet + dashboard push/pull ====
+var HEADERS = ['Date','✓','Task','Assigned To','Project / Domain','Priority','Status','Remarks'];
+var W = [110, 36, 300, 130, 170, 90, 110, 240];      // column widths
+var INK='#1a1815', LINE='#c9c2b4', HEADBG='#1a1815', HEADFG='#ffffff';
+var GROUPBG='#f4f1ea', DONEBG='#eef5e6', BLOCKBG='#fbecec';
+
+function ss_(){ return SpreadsheetApp.getActiveSpreadsheet(); }
+function syncSheet_(){
+  var sh = ss_().getSheetByName('_sync') || ss_().insertSheet('_sync');
+  sh.hideSheet(); return sh;
+}
+function reviewSheet_(){
+  return ss_().getSheetByName('Task Review') || ss_().insertSheet('Task Review');
+}
+function out_(obj){
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+function read_(){
+  var sh = syncSheet_(); var last = sh.getLastRow();
+  var json = last >= 1 ? sh.getRange(last,1).getValue() : '';
+  try{ return JSON.parse(json); }catch(err){ return {tasks:[]}; }
+}
+function titleById_(tasks,id){ for (var i=0;i<tasks.length;i++) if (tasks[i].id===id) return tasks[i].title; return ''; }
+function fmtDate_(iso){
+  if(!iso) return 'No date';
+  var d = new Date(iso+'T00:00:00');
+  if (isNaN(d)) return iso;
+  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'd MMMM yyyy');
+}
+
+function write_(tasks){
+  tasks = tasks || [];
+  // machine record the dashboard reads back
+  syncSheet_().getRange(1,1).setValue(JSON.stringify({tasks:tasks, savedAt:new Date().toISOString()}));
+
+  var sh = reviewSheet_();
+  sh.clear();
+  sh.getDataRange().clearFormat && sh.clearFormats();
+  var N = HEADERS.length;
+
+  // column widths
+  for (var c=0;c<N;c++) sh.setColumnWidth(c+1, W[c]);
+
+  // title banner
+  sh.getRange(1,1,1,N).merge().setValue('WOA — Task Review')
+    .setFontSize(16).setFontWeight('bold').setFontColor(HEADFG)
+    .setBackground(HEADBG).setHorizontalAlignment('left').setVerticalAlignment('middle');
+  sh.setRowHeight(1, 38);
+  sh.getRange(2,1,1,N).merge()
+    .setValue('Auto-generated from the WOA dashboard · last synced '+Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'d MMM yyyy HH:mm'))
+    .setFontColor('#7a7468').setFontStyle('italic').setFontSize(9);
+
+  // header row
+  var hr = 3;
+  sh.getRange(hr,1,1,N).setValues([HEADERS])
+    .setFontWeight('bold').setFontColor(HEADFG).setBackground(HEADBG)
+    .setHorizontalAlignment('center').setVerticalAlignment('middle');
+  sh.setRowHeight(hr, 28);
+
+  // group tasks by due date, sorted (dated first, ascending; no-date last)
+  var groups = {}, order = [];
+  tasks.forEach(function(t){
+    var k = t.due || '';
+    if (!groups[k]){ groups[k]=[]; order.push(k); }
+    groups[k].push(t);
+  });
+  order.sort(function(a,b){ if(a==='') return 1; if(b==='') return -1; return a<b?-1:a>b?1:0; });
+
+  var r = hr+1;
+  var prioRank = {High:0,Medium:1,Low:2};
+
+  order.forEach(function(k){
+    var g = groups[k].slice().sort(function(a,b){
+      return (prioRank[a.priority]||9)-(prioRank[b.priority]||9);
+    });
+    var startRow = r;
+    g.forEach(function(t){
+      var isLeader = t.type==='leadership';
+      var done = t.status==='Done';
+      var row = [
+        '',                                   // date (merged later)
+        done ? '☑' : '☐',                     // checkbox glyph
+        t.title||'',
+        t.owner||'',
+        isLeader ? (t.domain||'') : (t.project||''),
+        t.priority||'',
+        t.status||'',
+        t.blocker ? ('Blocked: '+t.blocker) : ''
+      ];
+      sh.getRange(r,1,1,N).setValues([row]);
+      sh.setRowHeight(r, 24);
+      // row background by state
+      if (done) sh.getRange(r,2,1,N-1).setBackground(DONEBG);
+      else if (t.status==='Blocked') sh.getRange(r,2,1,N-1).setBackground(BLOCKBG);
+      // checkbox + status centered
+      sh.getRange(r,2).setHorizontalAlignment('center').setFontSize(12);
+      sh.getRange(r,6,1,2).setHorizontalAlignment('center');
+      // priority color
+      var pc = t.priority==='High'?'#a32d2d':t.priority==='Medium'?'#9a6a0c':'#7a7468';
+      sh.getRange(r,6).setFontColor(pc).setFontWeight('bold');
+      r++;
+    });
+    // % completed for this group
+    var doneCount = g.filter(function(t){return t.status==='Done';}).length;
+    var pct = g.length ? Math.round(doneCount/g.length*100) : 0;
+    sh.getRange(r,1,1,N).setBackground(GROUPBG);
+    sh.getRange(r,1).setValue(pct+'%').setFontWeight('bold').setHorizontalAlignment('center');
+    sh.getRange(r,3).setValue('COMPLETED ('+doneCount+'/'+g.length+')').setFontWeight('bold').setFontColor('#3b6d11');
+    sh.setRowHeight(r, 22);
+    r++;
+
+    // merge the date cell vertically across this group's task rows + summary
+    var span = r - startRow;
+    if (span > 0){
+      sh.getRange(startRow,1,span,1).merge()
+        .setValue(fmtDate_(k))
+        .setFontWeight('bold').setVerticalAlignment('middle').setHorizontalAlignment('center')
+        .setBackground(GROUPBG).setWrap(true);
+    }
+  });
+
+  // borders + freeze
+  var lastRow = r-1;
+  if (lastRow >= hr){
+    sh.getRange(hr,1,lastRow-hr+1,N)
+      .setBorder(true,true,true,true,true,true,LINE,SpreadsheetApp.BorderStyle.SOLID);
+  }
+  sh.setFrozenRows(hr);
+  sh.getRange(hr+1, 1, Math.max(1,lastRow-hr), N).setVerticalAlignment('middle');
+}
+
+function doGet(e){
+  var p = (e && e.parameter) || {};
+  if (p.action === 'save' && p.data){ try{ write_(JSON.parse(p.data).tasks); }catch(err){} return out_({ok:true}); }
+  return out_(read_());
+}
+function doPost(e){
+  try{ var body = JSON.parse(e.postData.contents); if (body.action==='save') write_(body.tasks); }catch(err){}
+  return out_({ok:true});
+}`;
+
+async function copyScript(){
+  try{ await navigator.clipboard.writeText(APPS_SCRIPT); toast('Apps Script copied'); }
+  catch(e){ const b=document.getElementById('scriptBox'); const r=document.createRange();
+    r.selectNode(b); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    try{document.execCommand('copy');toast('Apps Script copied');}catch(_){toast('Select the code and copy manually');}
+    s.removeAllRanges(); }
+}
+
+/* ---------- helpers ---------- */
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const todayISO=()=>new Date().toISOString().slice(0,10);
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function daysUntil(d){ if(!d) return null; const a=new Date(d+'T00:00:00'),b=new Date(todayISO()+'T00:00:00');
+  return Math.round((a-b)/864e5); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1900); }
+
+function statusPill(s){
+  const map={'To Do':'st-todo','In Progress':'st-prog','Blocked':'st-block','Done':'st-done'};
+  return `<span class="pill dot ${map[s]||'st-todo'}">${s}</span>`;
+}
+function prioPill(p){
+  const map={'High':'pr-high','Medium':'pr-med','Low':'pr-low'};
+  return `<span class="pill ${map[p]||'pr-med'}">${p}</span>`;
+}
+function dueCell(d,status){
+  if(!d) return '<span class="meta">—</span>';
+  const n=daysUntil(d);
+  let cls=''; if(status!=='Done'){ if(n<0) cls='due-over'; else if(n<=7) cls='due-soon'; }
+  return `<span class="${cls}">${fmtDate(d)}</span>`;
+}
+function depName(id){ const t=tasks.find(x=>x.id===id); return t?t.title:''; }
+function groupLabel(t){ return t.type==='leadership' ? cap(t.domain) : (t.project||'(unassigned)'); }
+function cap(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
+
+/* ---------- work type toggle ---------- */
+function setWorkType(t){
+  workType=t;
+  document.getElementById('typeProject').classList.toggle('on',t==='project');
+  document.getElementById('typeLeader').classList.toggle('on',t==='leadership');
+  document.getElementById('wrap_project').style.display = t==='project'?'flex':'none';
+  document.getElementById('wrap_domain').style.display = t==='leadership'?'flex':'none';
+}
+function toggleBlocker(){
+  const s=document.getElementById('f_status').value;
+  document.getElementById('wrap_blocker').style.display = s==='Blocked'?'flex':'none';
+}
+
+/* ---------- save / edit / delete ---------- */
+async function saveTask(){
+  const title=document.getElementById('f_title').value.trim();
+  if(!title){ toast('Task name required'); return; }
+  const status=document.getElementById('f_status').value;
+  const rec={
+    id: editId||uid(),
+    type: workType,
+    title,
+    project: workType==='project'?document.getElementById('f_project').value.trim():'',
+    domain: workType==='leadership'?document.getElementById('f_domain').value:'',
+    owner: document.getElementById('f_owner').value.trim()||'Unassigned',
+    priority: document.getElementById('f_priority').value,
+    status,
+    due: document.getElementById('f_due').value,
+    category: document.getElementById('f_category').value.trim()||'General',
+    dep: document.getElementById('f_dep').value,
+    blocker: status==='Blocked'?document.getElementById('f_blocker').value:'',
+    created: editId?(tasks.find(t=>t.id===editId)||{}).created||todayISO():todayISO(),
+    doneDate: status==='Done'?(editId&&tasks.find(t=>t.id===editId)&&tasks.find(t=>t.id===editId).doneDate||todayISO()):''
+  };
+  if(editId){ tasks=tasks.map(t=>t.id===editId?rec:t); toast('Task updated'); }
+  else { tasks.push(rec); toast('Task added'); }
+  await persist(); resetForm(); render();
+}
+function editTask(id){
+  const t=tasks.find(x=>x.id===id); if(!t) return;
+  editId=id; setWorkType(t.type);
+  document.getElementById('f_title').value=t.title;
+  document.getElementById('f_project').value=t.project||'';
+  if(t.domain) document.getElementById('f_domain').value=t.domain;
+  document.getElementById('f_owner').value=t.owner;
+  document.getElementById('f_priority').value=t.priority;
+  document.getElementById('f_status').value=t.status;
+  document.getElementById('f_due').value=t.due;
+  document.getElementById('f_category').value=t.category;
+  toggleBlocker();
+  if(t.blocker) document.getElementById('f_blocker').value=t.blocker;
+  refreshDepOptions(id);
+  document.getElementById('f_dep').value=t.dep||'';
+  refreshLists();
+  document.getElementById('f_owner').value=t.owner||'';
+  document.getElementById('f_project').value=t.project||'';
+  document.getElementById('formTitle').textContent='Edit Task';
+  document.getElementById('saveBtn').textContent='Save Changes';
+  document.getElementById('editHint').textContent='Editing existing task';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function delTask(id){
+  tasks=tasks.filter(t=>t.id!==id);
+  tasks.forEach(t=>{ if(t.dep===id) t.dep=''; });
+  await persist(); render(); toast('Task deleted');
+}
+async function quickDone(id){
+  const t=tasks.find(x=>x.id===id); if(!t) return;
+  t.status='Done'; t.blocker=''; t.doneDate=todayISO();
+  await persist(); render(); toast('Marked done');
+}
+function resetForm(){
+  editId=null;
+  ['f_title','f_due','f_category'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('f_owner').value='';
+  document.getElementById('f_project').value='';
+  document.getElementById('f_priority').value='Medium';
+  document.getElementById('f_status').value='To Do';
+  document.getElementById('f_dep').value='';
+  refreshLists();
+  toggleBlocker();
+  document.getElementById('formTitle').textContent='New Task';
+  document.getElementById('saveBtn').textContent='Add Task';
+  document.getElementById('editHint').textContent='';
+}
+function refreshDepOptions(exclude){
+  const sel=document.getElementById('f_dep'); const cur=sel.value;
+  sel.innerHTML='<option value="">— none —</option>'+
+    tasks.filter(t=>t.id!==exclude).map(t=>`<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
+  sel.value=cur;
+}
+
+/* ---------- dropdowns & filters ---------- */
+function populateSelect(id, items, current, allowBlank){
+  const el=document.getElementById(id); if(!el) return;
+  const opts=[];
+  if(allowBlank) opts.push('<option value="">— select —</option>');
+  items.forEach(v=>opts.push(`<option value="${escapeHtml(v)}"${v===current?' selected':''}>${escapeHtml(v)}</option>`));
+  opts.push('<option value="__add__">+ Add new…</option>');
+  el.innerHTML=opts.join('');
+  if(current && !items.includes(current)){
+    // value not in list (e.g. legacy data): inject it so it still shows
+    const o=document.createElement('option'); o.value=current; o.textContent=current; o.selected=true;
+    el.insertBefore(o, el.firstChild);
+  } else if(current){ el.value=current; }
+}
+function refreshLists(){
+  // merge predefined with any values already used in tasks
+  const ownerSet=[...new Set(OWNERS.concat(tasks.map(t=>t.owner).filter(Boolean)))];
+  const projSet=[...new Set(PROJECTS.concat(tasks.filter(t=>t.project).map(t=>t.project)))];
+  const cats=[...new Set(tasks.map(t=>t.category))].sort();
+
+  populateSelect('f_owner', ownerSet, document.getElementById('f_owner').value || '');
+  populateSelect('f_project', projSet, document.getElementById('f_project').value || '', true);
+
+  document.getElementById('catList').innerHTML=cats.map(c=>`<option value="${escapeHtml(c)}">`).join('');
+  const fo=document.getElementById('fOwner'); const cur=fo.value;
+  fo.innerHTML='<option value="">All assignees</option>'+ownerSet.sort().map(o=>`<option>${escapeHtml(o)}</option>`).join('');
+  fo.value=cur;
+  refreshDepOptions(editId);
+}
+async function handleAddNew(sel, kind){
+  if(sel.value!=='__add__') return;
+  const label = kind==='owner' ? 'team member' : 'project';
+  const name = (prompt('Add a new '+label+':')||'').trim();
+  if(!name){ sel.value=''; refreshLists(); return; }
+  if(kind==='owner' && !OWNERS.includes(name)) OWNERS.push(name);
+  if(kind==='project' && !PROJECTS.includes(name)) PROJECTS.push(name);
+  await saveLists();
+  refreshLists();
+  sel.value=name;
+}
+
+/* ---------- metrics engine ---------- */
+function metricsFor(list){
+  const assigned=list.length;
+  const completed=list.filter(t=>t.status==='Done').length;
+  const blocked=list.filter(t=>t.status==='Blocked').length;
+  const rate=assigned?Math.round(completed/assigned*100):0;
+  // blocker-adjusted: exclude blocked tasks from the denominator
+  const adjDen=assigned-blocked;
+  const adjRate=adjDen>0?Math.round(completed/adjDen*100):0;
+  // blocker type breakdown
+  const bt={};
+  list.filter(t=>t.status==='Blocked').forEach(t=>{ bt[t.blocker||'Other']=(bt[t.blocker||'Other']||0)+1; });
+  return {assigned,completed,blocked,rate,adjRate,bt};
+}
+
+/* ---------- sorting ---------- */
+function setSort(k){ if(sortKey===k) sortDir*=-1; else {sortKey=k;sortDir=1;} render(); }
+function sortList(list){
+  const prioRank={High:0,Medium:1,Low:2};
+  return [...list].sort((a,b)=>{
+    let av,bv;
+    switch(sortKey){
+      case 'priority': av=prioRank[a.priority];bv=prioRank[b.priority];break;
+      case 'group': av=groupLabel(a);bv=groupLabel(b);break;
+      case 'due': av=a.due||'9999';bv=b.due||'9999';break;
+      default: av=(a[sortKey]||'').toString().toLowerCase();bv=(b[sortKey]||'').toString().toLowerCase();
+    }
+    if(av<bv) return -1*sortDir; if(av>bv) return 1*sortDir; return 0;
+  });
+}
+
+/* ---------- renderers ---------- */
+function render(){
+  refreshLists();
+  renderEntry(); renderProject(); renderArchitect();
+  renderLeadership(); renderWeekly(); renderMonthly();
+}
+
+function renderEntry(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const ft=document.getElementById('fType').value;
+  const fs=document.getElementById('fStatus').value;
+  const fo=document.getElementById('fOwner').value;
+  let list=tasks.filter(t=>{
+    if(ft&&t.type!==ft) return false;
+    if(fs&&t.status!==fs) return false;
+    if(fo&&t.owner!==fo) return false;
+    if(q&&!(t.title+t.project+t.domain+t.category+t.owner).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  list=sortList(list);
+  const body=document.getElementById('allBody');
+  if(!list.length){ body.innerHTML='<tr><td colspan="9"><div class="empty">No tasks yet. Add one above, or load sample data.</div></td></tr>'; return; }
+  body.innerHTML=list.map(t=>`
+    <tr>
+      <td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
+      <td>${t.type==='leadership'?`<span class="tag">${escapeHtml(cap(t.domain))}</span>`:escapeHtml(t.project||'—')}</td>
+      <td>${escapeHtml(t.owner)}</td>
+      <td>${prioPill(t.priority)}</td>
+      <td>${statusPill(t.status)}</td>
+      <td>${dueCell(t.due,t.status)}</td>
+      <td><span class="tag">${escapeHtml(t.category)}</span></td>
+      <td class="meta">${t.dep?escapeHtml(depName(t.dep)):'—'}</td>
+      <td><div class="row-act">
+        ${t.status!=='Done'?`<button class="icbtn" title="Mark done" onclick="quickDone('${t.id}')">✓</button>`:''}
+        <button class="icbtn" title="Edit" onclick="editTask('${t.id}')">✎</button>
+        <button class="icbtn del" title="Delete" onclick="delTask('${t.id}')">×</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function metricCards(m,container){
+  document.getElementById(container).innerHTML=`
+    <div class="metric"><div class="ml">Tasks Assigned</div><div class="mv">${m.assigned}</div></div>
+    <div class="metric good"><div class="ml">Completed</div><div class="mv">${m.completed}</div></div>
+    <div class="metric bad"><div class="ml">Blocked</div><div class="mv">${m.blocked}</div></div>
+    <div class="metric accent"><div class="ml">Completion Rate</div><div class="mv">${m.rate}<span class="mvs">%</span></div></div>
+    <div class="metric"><div class="ml">Blocker-Adjusted</div><div class="mv">${m.adjRate}<span class="mvs">%</span></div></div>`;
+}
+
+function renderProject(){
+  const proj=tasks.filter(t=>t.type==='project');
+  metricCards(metricsFor(proj),'projMetrics');
+  const groups={};
+  proj.forEach(t=>{ const k=t.project||'(unassigned)'; (groups[k]=groups[k]||[]).push(t); });
+  const keys=Object.keys(groups).sort();
+  const out=document.getElementById('projGroups');
+  if(!keys.length){ out.innerHTML='<div class="empty">No project tasks yet.</div>'; return; }
+  out.innerHTML=keys.map(k=>{
+    const g=groups[k]; const m=metricsFor(g);
+    const rows=sortList(g).map(t=>`
+      <tr><td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
+      <td>${escapeHtml(t.owner)}</td><td>${prioPill(t.priority)}</td><td>${statusPill(t.status)}</td>
+      <td>${dueCell(t.due,t.status)}</td><td><span class="tag">${escapeHtml(t.category)}</span></td>
+      <td class="meta">${t.dep?escapeHtml(depName(t.dep)):'—'}</td></tr>`).join('');
+    return `<div class="grp">
+      <div class="grp-h"><span class="gn">${escapeHtml(k)}</span>
+        <span class="gc">${m.completed}/${m.assigned} done</span>
+        <div class="bar"><i style="width:${m.rate}%"></i></div>
+        <span class="gc">${m.rate}%</span>${m.blocked?`<span class="gc" style="color:var(--red)">${m.blocked} blocked</span>`:''}</div>
+      <div class="tbl-wrap"><table><thead><tr><th>Task</th><th>Assigned To</th><th>Priority</th><th>Status</th><th>Due</th><th>Category</th><th>Dependency</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </div>`;
+  }).join('');
+}
+
+function renderArchitect(){
+  const owners=[...new Set(tasks.map(t=>t.owner))].sort();
+  const out=document.getElementById('architectGroups');
+  if(!owners.length){ out.innerHTML='<div class="empty">No tasks yet.</div>'; return; }
+  out.innerHTML=owners.map(o=>{
+    const g=tasks.filter(t=>t.owner===o); const m=metricsFor(g);
+    const rows=sortList(g).map(t=>`
+      <tr><td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
+      <td>${t.type==='leadership'?`<span class="tag">${escapeHtml(cap(t.domain))}</span>`:escapeHtml(t.project||'—')}</td>
+      <td>${prioPill(t.priority)}</td><td>${statusPill(t.status)}</td>
+      <td>${dueCell(t.due,t.status)}</td><td><span class="tag">${escapeHtml(t.category)}</span></td></tr>`).join('');
+    return `<div class="grp">
+      <div class="grp-h"><span class="gn">${escapeHtml(o)}</span>
+        <span class="gc">${m.assigned} assigned</span>
+        <span class="gc" style="color:var(--green)">${m.completed} done</span>
+        ${m.blocked?`<span class="gc" style="color:var(--red)">${m.blocked} blocked</span>`:''}
+        <div class="bar"><i style="width:${m.rate}%"></i></div><span class="gc">${m.rate}%</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Task</th><th>Project / Domain</th><th>Priority</th><th>Status</th><th>Due</th><th>Category</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </div>`;
+  }).join('');
+}
+
+function renderLeadership(){
+  const lead=tasks.filter(t=>t.type==='leadership');
+  metricCards(metricsFor(lead),'leadMetrics');
+  const domains=['business growth','content','hiring','strategy','office development','design direction'];
+  document.getElementById('leadDomains').innerHTML=domains.map(d=>{
+    const g=lead.filter(t=>t.domain===d); const m=metricsFor(g);
+    return `<div class="dom">
+      <div class="dh"><span class="dn">${d}</span><span class="dpct" style="color:${m.rate>=66?'var(--green)':m.rate>=33?'var(--amber)':'var(--muted)'}">${g.length?m.rate+'%':'—'}</span></div>
+      <div class="bar" style="max-width:none"><i style="width:${m.rate}%"></i></div>
+      <div class="dl"><span>${m.assigned} task${m.assigned!==1?'s':''}</span><span>${m.completed} done${m.blocked?' · '+m.blocked+' blocked':''}</span></div>
+    </div>`;
+  }).join('');
+  const lb=document.getElementById('leadBody');
+  lb.innerHTML = lead.length ? sortList(lead).map(t=>`
+    <tr><td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
+    <td><span class="tag">${escapeHtml(cap(t.domain))}</span></td><td>${escapeHtml(t.owner)}</td>
+    <td>${prioPill(t.priority)}</td><td>${statusPill(t.status)}</td><td>${dueCell(t.due,t.status)}</td></tr>`).join('')
+    : '<tr><td colspan="6"><div class="empty">No leadership tasks yet.</div></td></tr>';
+}
+
+function renderWeekly(){
+  const m=metricsFor(tasks);
+  document.getElementById('weekMetrics').innerHTML=`
+    <div class="metric"><div class="ml">Total Assigned</div><div class="mv">${m.assigned}</div></div>
+    <div class="metric good"><div class="ml">Completed</div><div class="mv">${m.completed}</div></div>
+    <div class="metric bad"><div class="ml">Blocked</div><div class="mv">${m.blocked}</div></div>
+    <div class="metric accent"><div class="ml">Completion Rate</div><div class="mv">${m.rate}<span class="mvs">%</span></div></div>
+    <div class="metric warn"><div class="ml">Blocker-Adjusted Rate</div><div class="mv">${m.adjRate}<span class="mvs">%</span></div></div>`;
+
+  // blocked grouped by type
+  const blocked=tasks.filter(t=>t.status==='Blocked');
+  const bt={};
+  blocked.forEach(t=>{ (bt[t.blocker||'Other']=bt[t.blocker||'Other']||[]).push(t); });
+  const wb=document.getElementById('weekBlocked');
+  wb.innerHTML = blocked.length ? Object.keys(bt).sort().map(k=>`
+    <div style="margin-bottom:12px">
+      <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--red);margin-bottom:5px">${escapeHtml(k)} · ${bt[k].length}</div>
+      ${bt[k].map(t=>`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)"><b>${escapeHtml(t.title)}</b> <span class="meta">— ${escapeHtml(t.owner)} · ${escapeHtml(groupLabel(t))}</span></div>`).join('')}
+    </div>`).join('') : '<div class="empty">Nothing blocked. </div>';
+
+  // due this week
+  const due=tasks.filter(t=>t.status!=='Done'&&t.due&&daysUntil(t.due)!==null&&daysUntil(t.due)<=7).sort((a,b)=>(a.due||'').localeCompare(b.due));
+  document.getElementById('weekDue').innerHTML = due.length ? due.map(t=>{
+    const n=daysUntil(t.due);
+    const lbl=n<0?`${Math.abs(n)}d overdue`:n===0?'today':n===1?'tomorrow':`in ${n}d`;
+    return `<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px"><span><b>${escapeHtml(t.title)}</b> <span class="meta">${escapeHtml(t.owner)}</span></span><span class="${n<0?'due-over':'due-soon'}" style="font-size:11.5px;white-space:nowrap">${lbl}</span></div>`;
+  }).join('') : '<div class="empty">Nothing due in the next 7 days.</div>';
+
+  const done=tasks.filter(t=>t.status==='Done').sort((a,b)=>(b.doneDate||'').localeCompare(a.doneDate||'')).slice(0,12);
+  document.getElementById('weekDone').innerHTML = done.length ? done.map(t=>`
+    <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)">✓ <b>${escapeHtml(t.title)}</b> <span class="meta">— ${escapeHtml(t.owner)} · ${escapeHtml(groupLabel(t))}${t.doneDate?' · '+fmtDate(t.doneDate):''}</span></div>`).join('')
+    : '<div class="empty">No completed tasks yet.</div>';
+
+  buildDigest();
+}
+
+/* ---------- WhatsApp digest ---------- */
+function digestText(){
+  const openOnly=document.getElementById('digOpenOnly') && document.getElementById('digOpenOnly').checked;
+  let list=openOnly ? tasks.filter(t=>t.status!=='Done') : tasks.slice();
+  const dateLbl=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric'});
+  const prioMark={High:'🔴',Medium:'🟡',Low:'⚪'};
+  let out=`*WOA — Week of ${dateLbl}*\n`;
+  const m=metricsFor(list);
+  out+=`${m.assigned} tasks · ${m.completed} done · ${m.blocked} blocked\n`;
+  out+='────────────────\n';
+  const owners=[...new Set(list.map(t=>t.owner))].sort();
+  if(!owners.length) return out+'\nNo tasks assigned yet.';
+  owners.forEach(o=>{
+    const og=list.filter(t=>t.owner===o)
+      .sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]-{High:0,Medium:1,Low:2}[b.priority]) || (a.due||'9999').localeCompare(b.due||'9999'));
+    out+=`\n*@${o}*\n`;
+    og.forEach(t=>{
+      const where=t.type==='leadership'?cap(t.domain):(t.project||'—');
+      let line=`${prioMark[t.priority]||'⚪'} ${t.title} _(${where})_`;
+      if(t.due){ const n=daysUntil(t.due);
+        const due=t.status==='Done'?'':n<0?` ⏰ ${Math.abs(n)}d overdue`:n===0?' ⏰ due today':` · due ${fmtDate(t.due)}`;
+        line+=due; }
+      if(t.status==='Done') line=`✅ ${t.title}`;
+      else if(t.status==='Blocked') line+=` 🚫 blocked: ${t.blocker||'unspecified'}`;
+      else if(t.status==='In Progress') line+=' 🔄';
+      out+=line+'\n';
+    });
+  });
+  out+='\n_Auto-generated from WOA — reply here if anything’s blocked._';
+  return out;
+}
+function buildDigest(){
+  const txt=digestText();
+  const box=document.getElementById('digestBox');
+  if(box) box.textContent=txt;
+  const link=document.getElementById('waOpen');
+  if(link) link.href='https://wa.me/?text='+encodeURIComponent(txt);
+}
+async function copyDigest(){
+  const txt=digestText();
+  try{ await navigator.clipboard.writeText(txt); toast('Digest copied — paste into your group'); }
+  catch(e){
+    const box=document.getElementById('digestBox');
+    const r=document.createRange(); r.selectNode(box);
+    const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    try{ document.execCommand('copy'); toast('Digest copied'); }catch(_){ toast('Select the text below and copy manually'); }
+    s.removeAllRanges();
+  }
+}
+
+function renderMonthly(){
+  // month selector from data
+  const months=[...new Set(tasks.map(t=>(t.created||todayISO()).slice(0,7)).concat([todayISO().slice(0,7)]))].sort().reverse();
+  const sel=document.getElementById('monthSel'); const cur=sel.value||months[0];
+  sel.innerHTML=months.map(m=>{
+    const d=new Date(m+'-01T00:00:00');
+    return `<option value="${m}" ${m===cur?'selected':''}>${d.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</option>`;
+  }).join('');
+  const month=sel.value||months[0];
+  const monthName=new Date(month+'-01T00:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  // tasks relevant to the period: created in month OR completed in month OR still open
+  const inPeriod=tasks.filter(t=>{
+    const c=(t.created||'').slice(0,7), d=(t.doneDate||'').slice(0,7);
+    return c===month || d===month || (t.status!=='Done');
+  });
+  const m=metricsFor(inPeriod);
+  const proj=metricsFor(inPeriod.filter(t=>t.type==='project'));
+  const lead=metricsFor(inPeriod.filter(t=>t.type==='leadership'));
+
+  // top blocker
+  const btEntries=Object.entries(m.bt).sort((a,b)=>b[1]-a[1]);
+  const topBlocker=btEntries.length?btEntries[0][0]:null;
+
+  // owner leaderboard
+  const owners=[...new Set(inPeriod.map(t=>t.owner))].map(o=>{
+    const om=metricsFor(inPeriod.filter(t=>t.owner===o)); return {o,...om};
+  }).sort((a,b)=>b.completed-a.completed);
+
+  // domain progress
+  const domains=['business growth','content','hiring','strategy','office development','design direction'];
+
+  const completedList=inPeriod.filter(t=>t.status==='Done');
+  const blockedList=inPeriod.filter(t=>t.status==='Blocked');
+
+  const narrative=`During ${monthName}, the team carried <b>${m.assigned}</b> active task${m.assigned!==1?'s':''} across projects and leadership work, completing <b>${m.completed}</b> for an overall completion rate of <b>${m.rate}%</b>. `+
+    (m.blocked? `${m.blocked} task${m.blocked!==1?'s were':' was'} blocked${topBlocker?`, most often on <b>${escapeHtml(topBlocker.toLowerCase())}</b>`:''}; with those excluded, the blocker-adjusted completion rate was <b>${m.adjRate}%</b>. `
+      : `No tasks were blocked this period, so the blocker-adjusted rate matches the raw rate at <b>${m.adjRate}%</b>. `)+
+    `Project work ran at ${proj.rate}% completion and leadership work at ${lead.rate}%.`;
+
+  document.getElementById('reportOut').innerHTML=`
+  <div class="report">
+    <div class="rh"><div class="rt">WOA · Monthly Performance Report</div>
+      <h2>${monthName}</h2>
+      <div class="rp">Generated ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · single source of truth</div></div>
+
+    <h4>Executive Summary</h4>
+    <p class="lead">${narrative}</p>
+
+    <h4>Key Metrics</h4>
+    <div class="rgrid">
+      <div class="rstat"><div class="v">${m.assigned}</div><div class="l">Assigned</div></div>
+      <div class="rstat"><div class="v" style="color:var(--green)">${m.completed}</div><div class="l">Completed</div></div>
+      <div class="rstat"><div class="v" style="color:var(--red)">${m.blocked}</div><div class="l">Blocked</div></div>
+      <div class="rstat"><div class="v" style="color:var(--accent)">${m.rate}%</div><div class="l">Completion</div></div>
+      <div class="rstat"><div class="v" style="color:var(--gold)">${m.adjRate}%</div><div class="l">Blocker-Adjusted</div></div>
+    </div>
+
+    <h4>Project vs Leadership</h4>
+    <div class="rgrid">
+      <div class="rstat"><div class="v">${proj.completed}/${proj.assigned}</div><div class="l">Project · ${proj.rate}%</div></div>
+      <div class="rstat"><div class="v">${lead.completed}/${lead.assigned}</div><div class="l">Leadership · ${lead.rate}%</div></div>
+    </div>
+
+    <h4>Leadership Domains</h4>
+    <ul>${domains.map(d=>{ const g=inPeriod.filter(t=>t.type==='leadership'&&t.domain===d); const dm=metricsFor(g);
+      return `<li>${cap(d)} — ${g.length?`${dm.completed}/${dm.assigned} complete (${dm.rate}%)`:'no activity'}</li>`; }).join('')}</ul>
+
+    <h4>Assignee Performance</h4>
+    <ul>${owners.length?owners.map(o=>`<li><b>${escapeHtml(o.o)}</b> — ${o.completed}/${o.assigned} completed (${o.rate}%)${o.blocked?` · ${o.blocked} blocked`:''}</li>`).join(''):'<li>No owners recorded.</li>'}</ul>
+
+    <h4>Blocker Analysis</h4>
+    ${btEntries.length?`<ul>${btEntries.map(([k,v])=>`<li>${escapeHtml(k)} — ${v} task${v!==1?'s':''} held up</li>`).join('')}</ul>`:'<p class="lead">No blockers recorded this period.</p>'}
+
+    <h4>Completed This Period</h4>
+    ${completedList.length?`<ul>${completedList.slice(0,15).map(t=>`<li>${escapeHtml(t.title)} <span style="color:var(--muted);font-size:12px">— ${escapeHtml(t.owner)} · ${escapeHtml(groupLabel(t))}</span></li>`).join('')}</ul>`:'<p class="lead">Nothing completed yet.</p>'}
+
+    <h4>Outstanding Risks</h4>
+    ${blockedList.length?`<ul>${blockedList.map(t=>`<li>${escapeHtml(t.title)} <span style="color:var(--muted);font-size:12px">— ${escapeHtml(t.owner)} · blocked on ${escapeHtml(t.blocker||'unspecified')}</span></li>`).join('')}</ul>`:'<p class="lead">No outstanding blockers.</p>'}
+
+    <div class="rfoot">This report was generated automatically from ${tasks.length} live task records. No data was re-entered or manually compiled.</div>
+  </div>`;
+}
+
+/* ---------- monday note ---------- */
+function mondayNote(){
+  const d=new Date(); const day=d.getDay();
+  const el=document.getElementById('mondayNote');
+  if(day===1) el.innerHTML='📌 <b>It\'s Monday.</b> Assign the week here — every task entered once flows into all six views and the monthly report automatically.';
+  else { const til=(8-day)%7||7; el.innerHTML=`Monday planning hub. Next Monday is in ${til} day${til!==1?'s':''}. Tasks entered here power every view and the monthly report — enter once, never recompile.`; }
+}
+
+/* ---------- tabs ---------- */
+document.getElementById('tabs').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  const v=e.target.dataset.v;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b===e.target));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ---------- clock ---------- */
+function tickClock(){
+  document.getElementById('clock').innerHTML=
+    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+
+    '<br><b>'+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})+'</b>';
+}
+
+/* ---------- sample + wipe ---------- */
+async function loadSample(){
+  const t=todayISO(); const d=n=>{const x=new Date();x-=0;const dt=new Date();dt.setDate(dt.getDate()+n);return dt.toISOString().slice(0,10);};
+  const mk=(o)=>Object.assign({id:uid(),type:'project',project:'',domain:'',owner:'Unassigned',priority:'Medium',status:'To Do',due:'',category:'General',dep:'',blocker:'',created:t,doneDate:''},o);
+  tasks=[
+    mk({title:'Schematic design package',project:'Riverside Villa',owner:'Priya',priority:'High',status:'In Progress',due:d(4),category:'Drawings'}),
+    mk({title:'Structural consultant coordination',project:'Riverside Villa',owner:'Rahul',priority:'High',status:'Blocked',due:d(2),category:'Coordination',blocker:'Vendor / Consultant'}),
+    mk({title:'Client approval on facade',project:'Riverside Villa',owner:'Alex',priority:'Medium',status:'Blocked',due:d(-1),category:'Approvals',blocker:'Client'}),
+    mk({title:'Site measurement visit',project:'Riverside Villa',owner:'Priya',priority:'Low',status:'Done',due:d(-5),category:'Site',doneDate:d(-4)}),
+    mk({title:'Concept moodboard',project:'Harbour Office Fit-out',owner:'Meera',priority:'Medium',status:'Done',due:d(-3),category:'Design',doneDate:d(-2)}),
+    mk({title:'MEP layout draft',project:'Harbour Office Fit-out',owner:'Rahul',priority:'High',status:'In Progress',due:d(6),category:'Drawings'}),
+    mk({title:'Furniture spec sheet',project:'Harbour Office Fit-out',owner:'Meera',priority:'Low',status:'To Do',due:d(9),category:'Procurement'}),
+    mk({title:'Permit submission',project:'Hillcrest Residence',owner:'Alex',priority:'High',status:'Blocked',due:d(1),category:'Approvals',blocker:'Permitting / Authority'}),
+    mk({title:'3D render set',project:'Hillcrest Residence',owner:'Priya',priority:'Medium',status:'In Progress',due:d(7),category:'Visualization'}),
+    mk({title:'Final BOQ',project:'Hillcrest Residence',owner:'Rahul',priority:'Medium',status:'To Do',due:d(12),category:'Costing'}),
+    mk({type:'leadership',domain:'business growth',title:'Follow up with 3 referral leads',owner:'Alex',priority:'High',status:'In Progress',due:d(3),category:'Pipeline'}),
+    mk({type:'leadership',domain:'content',title:'Publish project case study',owner:'Meera',priority:'Medium',status:'To Do',due:d(8),category:'Marketing'}),
+    mk({type:'leadership',domain:'hiring',title:'Interview junior architect',owner:'Alex',priority:'High',status:'Done',due:d(-2),category:'Recruitment',doneDate:d(-1)}),
+    mk({type:'leadership',domain:'strategy',title:'Q3 studio roadmap',owner:'Alex',priority:'Medium',status:'To Do',due:d(14),category:'Planning'}),
+    mk({type:'leadership',domain:'office development',title:'New printer + plotter setup',owner:'Rahul',priority:'Low',status:'Blocked',due:d(5),category:'Operations',blocker:'Budget'}),
+    mk({type:'leadership',domain:'design direction',title:'Define studio material palette',owner:'Meera',priority:'Medium',status:'In Progress',due:d(10),category:'Standards'}),
+  ];
+  await persist(); render(); toast('Sample data loaded');
+}
+async function wipeAll(){
+  if(!confirm('Delete all tasks? This cannot be undone.')) return;
+  tasks=[]; await persist(); render(); toast('All tasks cleared');
+}
+
+/* ---------- boot ---------- */
+(async function(){
+  tickClock(); setInterval(tickClock,30000);
+  mondayNote();
+  document.getElementById('f_due').value='';
+  document.getElementById('scriptBox').textContent=APPS_SCRIPT;
+  await load();
+  render();
+  // restore sync UI
+  document.getElementById('syncUrl').value=syncUrl;
+  document.getElementById('autoSync').checked=autoSync;
+  if(syncUrl){
+    setSyncState('Connected. '+(autoSync?'Auto-sync on — pulling latest…':'Use Pull to get the latest.'));
+    if(autoSync) pullNow();
+  }
+})();
+</script>
+</body>
+</html>
