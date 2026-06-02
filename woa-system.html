@@ -114,6 +114,14 @@
   .seg button{font-family:ui-sans-serif,system-ui,sans-serif;border:none;background:none;color:var(--muted);
     font-size:12px;font-weight:600;padding:7px 13px;cursor:pointer}
   .seg button.on{background:var(--ink);color:var(--paper)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:500;cursor:pointer;
+    border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:20px;padding:6px 13px;
+    transition:.13s;user-select:none}
+  .chip:hover{border-color:var(--muted)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.add{border-style:dashed;color:var(--muted)}
+  .chip.add:hover{color:var(--ink)}
 
   .empty{text-align:center;padding:40px 20px;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px}
 
@@ -128,6 +136,27 @@
 
   /* leadership domains */
   .dom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px}
+  .pcard .pc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:11px}
+  .pcard .pc-name{font-size:16px;font-weight:700;letter-spacing:-.2px}
+  .pcard .pc-sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);margin-top:2px}
+  .pcard .pc-pct{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .pcard .pc-body{display:flex;gap:18px;align-items:center}
+  .pcard .donut-wrap{flex-shrink:0;position:relative;width:104px;height:104px}
+  .pcard .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:ui-sans-serif,system-ui,sans-serif}
+  .pcard .donut-center .dc-v{font-size:22px;font-weight:800;line-height:1}
+  .pcard .donut-center .dc-l{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .pcard .bd{flex:1;min-width:0;font-family:ui-sans-serif,system-ui,sans-serif}
+  .pcard .bd-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
+  .pcard .bd-row:last-child{margin-bottom:0}
+  .pcard .bd-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+  .pcard .bd-name{color:var(--muted);width:74px;flex-shrink:0}
+  .pcard .bd-track{flex:1;height:7px;border-radius:4px;background:rgba(120,110,90,.14);overflow:hidden;min-width:30px}
+  .pcard .bd-track > i{display:block;height:100%;border-radius:4px}
+  .pcard .bd-n{font-weight:700;width:20px;text-align:right;flex-shrink:0}
+  .pcard .pc-foot{display:flex;gap:14px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;color:var(--muted)}
+  .pcard .pc-foot b{color:var(--ink);font-weight:700}
   .dom{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;box-shadow:var(--shadow)}
   .dom .dh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
   .dom .dn{font-size:14px;font-weight:700;text-transform:capitalize}
@@ -182,7 +211,7 @@
     <button data-v="entry" class="on">Task Entry</button>
     <button data-v="project">Project View</button>
     <button data-v="architect">Architect View</button>
-    <button data-v="leadership">Leadership View</button>
+    <button data-v="leadership">Project Dashboard</button>
     <button data-v="weekly">Weekly Review</button>
     <button data-v="monthly">Monthly Report</button>
     <button data-v="sync">Sync &amp; Settings</button>
@@ -215,8 +244,8 @@
             <option>strategy</option><option>office development</option><option>design direction</option>
           </select>
         </div>
-        <div class="fld"><label>Assigned To</label>
-          <select id="f_owner" onchange="handleAddNew(this,'owner')"></select>
+        <div class="fld span2"><label>Assigned To <span style="text-transform:none;letter-spacing:0;font-weight:400">(tap to select one or more)</span></label>
+          <div id="ownerChips" class="chips"></div>
         </div>
         <div class="fld"><label>Priority</label>
           <select id="f_priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
@@ -290,13 +319,9 @@
 
   <!-- ============ LEADERSHIP ============ -->
   <section class="view" id="v-leadership">
-    <div class="vhead"><h2>Leadership View</h2><p>The six leadership domains — business growth, content, hiring, strategy, office development, design direction.</p></div>
-    <div class="metrics" id="leadMetrics"></div>
-    <div class="dom-grid" id="leadDomains"></div>
-    <div style="margin-top:18px" class="tbl-wrap">
-      <table><thead><tr><th>Task</th><th>Domain</th><th>Assigned To</th><th>Priority</th><th>Status</th><th>Due</th></tr></thead>
-      <tbody id="leadBody"></tbody></table>
-    </div>
+    <div class="vhead"><h2>Project Dashboard</h2><p>Each project at a glance — completion donut and status breakdown, side by side.</p></div>
+    <div class="metrics" id="projDashMetrics"></div>
+    <div class="dash-grid" id="projDashGrid"></div>
   </section>
 
   <!-- ============ WEEKLY ============ -->
@@ -393,7 +418,7 @@ let syncUrl='', autoSync=false, syncing=false;
 
 /* ---------- predefined dropdown lists (editable, persisted) ---------- */
 const OWNERKEY='woa:owners:v1', PROJKEY='woa:projects:v1';
-let OWNERS=['Abhishek','Raja','Abhi','Subin','Alex'];
+let OWNERS=['Abhishek Raja','Abhi','Subin','Alex'];
 let PROJECTS=['058_JewelOne Flagship','029_HBTS','042_FA Kannur','047_School'];
 
 /* ---------- local storage: window.storage (Claude viewer) OR localStorage (downloaded file) ---------- */
@@ -704,7 +729,8 @@ async function saveTask(){
     title,
     project: workType==='project'?document.getElementById('f_project').value.trim():'',
     domain: workType==='leadership'?document.getElementById('f_domain').value:'',
-    owner: document.getElementById('f_owner').value.trim()||'Unassigned',
+    owners: [...selectedOwners],
+    owner: [...selectedOwners].join(', ')||'Unassigned',
     priority: document.getElementById('f_priority').value,
     status,
     due: document.getElementById('f_due').value,
@@ -724,7 +750,7 @@ function editTask(id){
   document.getElementById('f_title').value=t.title;
   document.getElementById('f_project').value=t.project||'';
   if(t.domain) document.getElementById('f_domain').value=t.domain;
-  document.getElementById('f_owner').value=t.owner;
+  selectedOwners=new Set(ownerArr(t));
   document.getElementById('f_priority').value=t.priority;
   document.getElementById('f_status').value=t.status;
   document.getElementById('f_due').value=t.due;
@@ -734,7 +760,6 @@ function editTask(id){
   refreshDepOptions(id);
   document.getElementById('f_dep').value=t.dep||'';
   refreshLists();
-  document.getElementById('f_owner').value=t.owner||'';
   document.getElementById('f_project').value=t.project||'';
   document.getElementById('formTitle').textContent='Edit Task';
   document.getElementById('saveBtn').textContent='Save Changes';
@@ -754,7 +779,7 @@ async function quickDone(id){
 function resetForm(){
   editId=null;
   ['f_title','f_due','f_category'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('f_owner').value='';
+  selectedOwners=new Set();
   document.getElementById('f_project').value='';
   document.getElementById('f_priority').value='Medium';
   document.getElementById('f_status').value='To Do';
@@ -786,28 +811,54 @@ function populateSelect(id, items, current, allowBlank){
     el.insertBefore(o, el.firstChild);
   } else if(current){ el.value=current; }
 }
+let selectedOwners=new Set();
+function ownerArr(t){
+  if(Array.isArray(t.owners)) return t.owners.filter(Boolean);
+  if(t.owner) return [t.owner];   // legacy single-string support
+  return [];
+}
+function ownerStr(t){ const a=ownerArr(t); return a.length?a.join(', '):'Unassigned'; }
+
+function renderOwnerChips(){
+  const box=document.getElementById('ownerChips'); if(!box) return;
+  const set=[...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))];
+  box.innerHTML = set.map(o=>
+    `<span class="chip${selectedOwners.has(o)?' on':''}" onclick="toggleOwner('${o.replace(/'/g,"\\'")}')">${escapeHtml(o)}</span>`
+  ).join('') + `<span class="chip add" onclick="addOwnerChip()">+ Add</span>`;
+}
+function toggleOwner(name){
+  if(selectedOwners.has(name)) selectedOwners.delete(name); else selectedOwners.add(name);
+  renderOwnerChips();
+}
+async function addOwnerChip(){
+  const name=(prompt('Add a new team member:')||'').trim();
+  if(!name) return;
+  if(!OWNERS.includes(name)) OWNERS.push(name);
+  await saveLists();
+  selectedOwners.add(name);
+  renderOwnerChips();
+}
+
 function refreshLists(){
   // merge predefined with any values already used in tasks
-  const ownerSet=[...new Set(OWNERS.concat(tasks.map(t=>t.owner).filter(Boolean)))];
   const projSet=[...new Set(PROJECTS.concat(tasks.filter(t=>t.project).map(t=>t.project)))];
   const cats=[...new Set(tasks.map(t=>t.category))].sort();
+  const ownerSet=[...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))].sort();
 
-  populateSelect('f_owner', ownerSet, document.getElementById('f_owner').value || '');
   populateSelect('f_project', projSet, document.getElementById('f_project').value || '', true);
+  renderOwnerChips();
 
   document.getElementById('catList').innerHTML=cats.map(c=>`<option value="${escapeHtml(c)}">`).join('');
   const fo=document.getElementById('fOwner'); const cur=fo.value;
-  fo.innerHTML='<option value="">All assignees</option>'+ownerSet.sort().map(o=>`<option>${escapeHtml(o)}</option>`).join('');
+  fo.innerHTML='<option value="">All assignees</option>'+ownerSet.map(o=>`<option>${escapeHtml(o)}</option>`).join('');
   fo.value=cur;
   refreshDepOptions(editId);
 }
 async function handleAddNew(sel, kind){
   if(sel.value!=='__add__') return;
-  const label = kind==='owner' ? 'team member' : 'project';
-  const name = (prompt('Add a new '+label+':')||'').trim();
+  const name = (prompt('Add a new project:')||'').trim();
   if(!name){ sel.value=''; refreshLists(); return; }
-  if(kind==='owner' && !OWNERS.includes(name)) OWNERS.push(name);
-  if(kind==='project' && !PROJECTS.includes(name)) PROJECTS.push(name);
+  if(!PROJECTS.includes(name)) PROJECTS.push(name);
   await saveLists();
   refreshLists();
   sel.value=name;
@@ -859,8 +910,8 @@ function renderEntry(){
   let list=tasks.filter(t=>{
     if(ft&&t.type!==ft) return false;
     if(fs&&t.status!==fs) return false;
-    if(fo&&t.owner!==fo) return false;
-    if(q&&!(t.title+t.project+t.domain+t.category+t.owner).toLowerCase().includes(q)) return false;
+    if(fo&&!ownerArr(t).includes(fo)) return false;
+    if(q&&!(t.title+t.project+t.domain+t.category+ownerStr(t)).toLowerCase().includes(q)) return false;
     return true;
   });
   list=sortList(list);
@@ -919,11 +970,11 @@ function renderProject(){
 }
 
 function renderArchitect(){
-  const owners=[...new Set(tasks.map(t=>t.owner))].sort();
+  const owners=[...new Set(tasks.flatMap(ownerArr))].sort();
   const out=document.getElementById('architectGroups');
   if(!owners.length){ out.innerHTML='<div class="empty">No tasks yet.</div>'; return; }
   out.innerHTML=owners.map(o=>{
-    const g=tasks.filter(t=>t.owner===o); const m=metricsFor(g);
+    const g=tasks.filter(t=>ownerArr(t).includes(o)); const m=metricsFor(g);
     const rows=sortList(g).map(t=>`
       <tr><td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
       <td>${t.type==='leadership'?`<span class="tag">${escapeHtml(cap(t.domain))}</span>`:escapeHtml(t.project||'—')}</td>
@@ -940,24 +991,90 @@ function renderArchitect(){
   }).join('');
 }
 
+function donutSVG(done,prog,block,todo,total){
+  // segments in order: done(green), in progress(blue), blocked(red), todo(grey)
+  const segs=[
+    {n:done, c:'var(--green)'},
+    {n:prog, c:'var(--blue)'},
+    {n:block,c:'var(--red)'},
+    {n:todo, c:'var(--muted)'}
+  ];
+  const r=42, cx=52, cy=52, circ=2*Math.PI*r;
+  let off=0, parts='';
+  if(total>0){
+    segs.forEach(s=>{
+      if(s.n<=0) return;
+      const len=s.n/total*circ;
+      parts+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.c}" stroke-width="16"
+        stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-off}"
+        transform="rotate(-90 ${cx} ${cy})"></circle>`;
+      off+=len;
+    });
+  } else {
+    parts=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(120,110,90,.14)" stroke-width="16"></circle>`;
+  }
+  return `<svg viewBox="0 0 104 104" width="104" height="104">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(120,110,90,.10)" stroke-width="16"></circle>
+    ${parts}</svg>`;
+}
+
 function renderLeadership(){
-  const lead=tasks.filter(t=>t.type==='leadership');
-  metricCards(metricsFor(lead),'leadMetrics');
-  const domains=['business growth','content','hiring','strategy','office development','design direction'];
-  document.getElementById('leadDomains').innerHTML=domains.map(d=>{
-    const g=lead.filter(t=>t.domain===d); const m=metricsFor(g);
-    return `<div class="dom">
-      <div class="dh"><span class="dn">${d}</span><span class="dpct" style="color:${m.rate>=66?'var(--green)':m.rate>=33?'var(--amber)':'var(--muted)'}">${g.length?m.rate+'%':'—'}</span></div>
-      <div class="bar" style="max-width:none"><i style="width:${m.rate}%"></i></div>
-      <div class="dl"><span>${m.assigned} task${m.assigned!==1?'s':''}</span><span>${m.completed} done${m.blocked?' · '+m.blocked+' blocked':''}</span></div>
+  // NOTE: id kept as v-leadership for routing; this is now the Project Dashboard.
+  const proj=tasks.filter(t=>t.type==='project');
+  metricCards(metricsFor(proj),'projDashMetrics');
+
+  const groups={};
+  proj.forEach(t=>{ const k=t.project||'(unassigned)'; (groups[k]=groups[k]||[]).push(t); });
+  const keys=Object.keys(groups).sort();
+  const grid=document.getElementById('projDashGrid');
+  if(!keys.length){ grid.innerHTML='<div class="empty">No project tasks yet. Add some on the Task Entry tab.</div>'; return; }
+
+  grid.innerHTML=keys.map(k=>{
+    const g=groups[k];
+    const done=g.filter(t=>t.status==='Done').length;
+    const prog=g.filter(t=>t.status==='In Progress').length;
+    const block=g.filter(t=>t.status==='Blocked').length;
+    const todo=g.filter(t=>t.status==='To Do').length;
+    const total=g.length;
+    const rate=total?Math.round(done/total*100):0;
+    const pctColor=rate>=66?'var(--green)':rate>=33?'var(--amber)':'var(--muted)';
+    const pctBg=rate>=66?'rgba(59,109,17,.16)':rate>=33?'rgba(154,106,12,.15)':'rgba(120,110,90,.14)';
+    const owners=[...new Set(g.flatMap(ownerArr))];
+    const overdue=g.filter(t=>t.status!=='Done'&&t.due&&daysUntil(t.due)<0).length;
+
+    const bdRow=(label,n,color)=>`
+      <div class="bd-row">
+        <span class="bd-dot" style="background:${color}"></span>
+        <span class="bd-name">${label}</span>
+        <span class="bd-track"><i style="width:${total?Math.round(n/total*100):0}%;background:${color}"></i></span>
+        <span class="bd-n">${n}</span>
+      </div>`;
+
+    return `<div class="pcard">
+      <div class="pc-h">
+        <div><div class="pc-name">${escapeHtml(k)}</div>
+          <div class="pc-sub">${total} task${total!==1?'s':''} · ${owners.length} assignee${owners.length!==1?'s':''}</div></div>
+        <span class="pc-pct" style="color:${pctColor};background:${pctBg}">${rate}% done</span>
+      </div>
+      <div class="pc-body">
+        <div class="donut-wrap">
+          ${donutSVG(done,prog,block,todo,total)}
+          <div class="donut-center"><span class="dc-v" style="color:${pctColor}">${rate}%</span><span class="dc-l">complete</span></div>
+        </div>
+        <div class="bd">
+          ${bdRow('Done',done,'var(--green)')}
+          ${bdRow('In progress',prog,'var(--blue)')}
+          ${bdRow('Blocked',block,'var(--red)')}
+          ${bdRow('To do',todo,'var(--muted)')}
+        </div>
+      </div>
+      <div class="pc-foot">
+        <span><b>${done}</b>/${total} complete</span>
+        ${block?`<span style="color:var(--red)"><b>${block}</b> blocked</span>`:''}
+        ${overdue?`<span style="color:var(--red)"><b>${overdue}</b> overdue</span>`:''}
+      </div>
     </div>`;
   }).join('');
-  const lb=document.getElementById('leadBody');
-  lb.innerHTML = lead.length ? sortList(lead).map(t=>`
-    <tr><td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
-    <td><span class="tag">${escapeHtml(cap(t.domain))}</span></td><td>${escapeHtml(t.owner)}</td>
-    <td>${prioPill(t.priority)}</td><td>${statusPill(t.status)}</td><td>${dueCell(t.due,t.status)}</td></tr>`).join('')
-    : '<tr><td colspan="6"><div class="empty">No leadership tasks yet.</div></td></tr>';
 }
 
 function renderWeekly(){
@@ -1006,10 +1123,10 @@ function digestText(){
   const m=metricsFor(list);
   out+=`${m.assigned} tasks · ${m.completed} done · ${m.blocked} blocked\n`;
   out+='────────────────\n';
-  const owners=[...new Set(list.map(t=>t.owner))].sort();
+  const owners=[...new Set(list.flatMap(ownerArr))].sort();
   if(!owners.length) return out+'\nNo tasks assigned yet.';
   owners.forEach(o=>{
-    const og=list.filter(t=>t.owner===o)
+    const og=list.filter(t=>ownerArr(t).includes(o))
       .sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]-{High:0,Medium:1,Low:2}[b.priority]) || (a.due||'9999').localeCompare(b.due||'9999'));
     out+=`\n*@${o}*\n`;
     og.forEach(t=>{
@@ -1071,8 +1188,8 @@ function renderMonthly(){
   const topBlocker=btEntries.length?btEntries[0][0]:null;
 
   // owner leaderboard
-  const owners=[...new Set(inPeriod.map(t=>t.owner))].map(o=>{
-    const om=metricsFor(inPeriod.filter(t=>t.owner===o)); return {o,...om};
+  const owners=[...new Set(inPeriod.flatMap(ownerArr))].map(o=>{
+    const om=metricsFor(inPeriod.filter(t=>ownerArr(t).includes(o))); return {o,...om};
   }).sort((a,b)=>b.completed-a.completed);
 
   // domain progress
@@ -1157,10 +1274,11 @@ function tickClock(){
 /* ---------- sample + wipe ---------- */
 async function loadSample(){
   const t=todayISO(); const d=n=>{const x=new Date();x-=0;const dt=new Date();dt.setDate(dt.getDate()+n);return dt.toISOString().slice(0,10);};
-  const mk=(o)=>Object.assign({id:uid(),type:'project',project:'',domain:'',owner:'Unassigned',priority:'Medium',status:'To Do',due:'',category:'General',dep:'',blocker:'',created:t,doneDate:''},o);
+  const mk=(o)=>{ const r=Object.assign({id:uid(),type:'project',project:'',domain:'',owner:'Unassigned',priority:'Medium',status:'To Do',due:'',category:'General',dep:'',blocker:'',created:t,doneDate:''},o);
+    r.owners=r.owner.split(',').map(s=>s.trim()).filter(Boolean); return r; };
   tasks=[
     mk({title:'Schematic design package',project:'Riverside Villa',owner:'Priya',priority:'High',status:'In Progress',due:d(4),category:'Drawings'}),
-    mk({title:'Structural consultant coordination',project:'Riverside Villa',owner:'Rahul',priority:'High',status:'Blocked',due:d(2),category:'Coordination',blocker:'Vendor / Consultant'}),
+    mk({title:'Structural consultant coordination',project:'Riverside Villa',owner:'Abhishek Raja, Abhi',priority:'High',status:'Blocked',due:d(2),category:'Coordination',blocker:'Vendor / Consultant'}),
     mk({title:'Client approval on facade',project:'Riverside Villa',owner:'Alex',priority:'Medium',status:'Blocked',due:d(-1),category:'Approvals',blocker:'Client'}),
     mk({title:'Site measurement visit',project:'Riverside Villa',owner:'Priya',priority:'Low',status:'Done',due:d(-5),category:'Site',doneDate:d(-4)}),
     mk({title:'Concept moodboard',project:'Harbour Office Fit-out',owner:'Meera',priority:'Medium',status:'Done',due:d(-3),category:'Design',doneDate:d(-2)}),
