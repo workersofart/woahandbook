@@ -375,6 +375,7 @@
         <button class="btn" onclick="saveSyncUrl()">Save &amp; connect</button>
         <button class="btn ghost" onclick="pullNow()">Pull from sheet</button>
         <button class="btn ghost" onclick="pushNow()">Push to sheet</button>
+        <button class="btn ghost" onclick="copyShareLink()" id="shareLinkBtn" style="display:none">📋 Copy shareable link</button>
         <span class="hint" id="syncState">Not connected — data is stored only in this browser.</span>
       </div>
       <div class="legend" id="syncMeta"></div>
@@ -458,6 +459,8 @@ async function saveSyncUrl(){
     if(!confirm('That doesn\'t look like an Apps Script /exec URL. Save anyway?')) return;
   }
   syncUrl=u; await lsSet(URLKEY,u);
+  const shareBtnEl=document.getElementById('shareLinkBtn');
+  if(shareBtnEl) shareBtnEl.style.display=u?'':'none';
   if(!u){ setSyncState('Disconnected — data stored only in this browser.'); return; }
   setSyncState('Connecting…'); await pullNow();
 }
@@ -525,6 +528,14 @@ async function toggleAuto(){
   autoSync=document.getElementById('autoSync').checked;
   await lsSet(AUTOKEY, autoSync?'1':'0');
   if(autoSync && syncUrl) pushNow(true);
+}
+function copyShareLink(){
+  if(!syncUrl){ toast('Connect a Google Sheet first'); return; }
+  const base=location.origin+location.pathname;
+  const link=base+'#sync='+encodeURIComponent(syncUrl);
+  navigator.clipboard.writeText(link).then(()=>toast('Shareable link copied! Anyone who opens it will auto-connect to the same sheet.')).catch(()=>{
+    prompt('Copy this link to share with your team:',link);
+  });
 }
 
 const APPS_SCRIPT=`// ==== WOA Tasks sync v3 — styled review sheet + dashboard push/pull ====
@@ -1316,13 +1327,27 @@ async function wipeAll(){
   document.getElementById('f_due').value='';
   document.getElementById('scriptBox').textContent=APPS_SCRIPT;
   await load();
-  render();
+  // Check URL hash for embedded sync URL shared via link (e.g. #sync=https://...)
+  const hashMatch=location.hash.match(/[#&]sync=([^&]+)/);
+  if(hashMatch){
+    const urlFromHash=decodeURIComponent(hashMatch[1]);
+    if(urlFromHash && urlFromHash!==syncUrl){
+      syncUrl=urlFromHash; await lsSet(URLKEY,syncUrl);
+      autoSync=true; await lsSet(AUTOKEY,'1');
+    }
+    history.replaceState(null,'',location.pathname+location.search);
+  }
   // restore sync UI
   document.getElementById('syncUrl').value=syncUrl;
   document.getElementById('autoSync').checked=autoSync;
+  const shareBtnEl=document.getElementById('shareLinkBtn');
+  if(shareBtnEl) shareBtnEl.style.display=syncUrl?'':'none';
   if(syncUrl){
-    setSyncState('Connected. '+(autoSync?'Auto-sync on — pulling latest…':'Use Pull to get the latest.'));
-    if(autoSync) pullNow();
+    // Always pull on page load when a sheet is connected — ensures any device gets shared data
+    setSyncState('Connected — pulling latest data…');
+    await pullNow();
+  } else {
+    render();
   }
 })();
 </script>
