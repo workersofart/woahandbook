@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOA — Intern Tracker</title>
+<style>
+  :root{
+    --ink:#1a1815; --paper:#f4f1ea; --card:#fffdf8; --line:#ddd6c8;
+    --muted:#7a7468; --accent:#b5491f; --accent2:#1d6b58; --gold:#a8842c;
+    --blue:#2a5a8c; --red:#a32d2d; --amber:#9a6a0c; --green:#3b6d11;
+    --radius:10px; --shadow:0 1px 0 rgba(0,0,0,.04),0 8px 24px rgba(40,30,15,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#ede8df; --paper:#1a1815; --card:#232019; --line:#3a352b;
+      --muted:#9b9486; --accent:#e07a4a; --accent2:#4cae93; --gold:#d4ab4e;
+      --blue:#6ba3d8; --red:#e26b6b; --amber:#d4a23e; --green:#8fc04e;
+      --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 24px rgba(0,0,0,.35); }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px 80px}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;
+    padding:30px 0 18px;border-bottom:2px solid var(--ink);margin-bottom:4px;gap:20px;flex-wrap:wrap}
+  .brand h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .brand .sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--muted);margin-top:7px}
+  .clock{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);text-align:right}
+  .clock b{color:var(--ink);font-weight:600}
+  nav.tabs{display:flex;gap:2px;flex-wrap:wrap;margin:16px 0 22px;
+    font-family:ui-sans-serif,system-ui,sans-serif}
+  nav.tabs button{font-family:inherit;font-size:13px;font-weight:500;border:none;background:none;
+    color:var(--muted);padding:9px 15px;border-radius:7px;cursor:pointer;transition:.15s;white-space:nowrap}
+  nav.tabs button:hover{color:var(--ink);background:rgba(120,110,90,.08)}
+  nav.tabs button.on{background:var(--ink);color:var(--paper)}
+  .view{display:none;animation:fade .3s ease}
+  .view.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .vhead{margin:6px 0 18px}
+  .vhead h2{font-size:23px;font-weight:700;letter-spacing:-.3px}
+  .vhead p{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--muted);margin-top:3px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px 22px;margin-bottom:18px}
+  .card h3{font-size:16px;font-weight:700;margin-bottom:3px}
+  .card .ch-sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);margin-bottom:14px}
+
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;
+    font-family:ui-sans-serif,system-ui,sans-serif}
+  .fld{display:flex;flex-direction:column;gap:4px}
+  .fld.span2{grid-column:span 2}
+  .fld label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  input,select,textarea{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:8px 10px;width:100%;transition:.15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(181,73,31,.13)}
+  .actions{display:flex;gap:9px;margin-top:14px;align-items:center;flex-wrap:wrap;
+    font-family:ui-sans-serif,system-ui,sans-serif}
+  button.btn{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;cursor:pointer;
+    border-radius:7px;padding:9px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);transition:.15s}
+  button.btn:hover{opacity:.85}
+  button.btn.ghost{background:none;color:var(--ink)}
+  button.btn.ghost:hover{background:rgba(120,110,90,.08);opacity:1}
+  button.btn.sm{padding:5px 11px;font-size:12px}
+  .hint{font-size:12px;color:var(--muted)}
+
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:11px;margin-bottom:18px}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--shadow)}
+  .metric .ml{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10.5px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--muted);font-weight:600}
+  .metric .mv{font-size:27px;font-weight:800;letter-spacing:-.5px;margin-top:4px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .metric .mvs{font-size:12px;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-weight:500}
+  .metric.accent .mv{color:var(--accent)}
+  .metric.good .mv{color:var(--green)}
+  .metric.warn .mv{color:var(--amber)}
+  .metric.bad .mv{color:var(--red)}
+
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-family:ui-sans-serif,system-ui,sans-serif;font-size:12.8px}
+  thead th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    font-weight:700;padding:11px 12px;border-bottom:1.5px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+  thead th:hover{color:var(--ink)}
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:rgba(120,110,90,.045)}
+  td .tt{font-weight:600;font-size:13px;color:var(--ink)}
+  td .meta{font-size:11px;color:var(--muted)}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .pill.dot::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px;background:currentColor}
+  .st-todo{background:rgba(122,116,104,.16);color:var(--muted)}
+  .st-prog{background:rgba(42,90,140,.15);color:var(--blue)}
+  .st-wait{background:rgba(154,106,12,.15);color:var(--amber)}
+  .st-review{background:rgba(168,132,44,.15);color:var(--gold)}
+  .st-done{background:rgba(59,109,17,.16);color:var(--green)}
+  .pr-high{background:rgba(163,45,45,.13);color:var(--red)}
+  .pr-med{background:rgba(154,106,12,.15);color:var(--amber)}
+  .pr-low{background:rgba(122,116,104,.14);color:var(--muted)}
+  .tag{display:inline-block;font-family:ui-sans-serif,system-ui,sans-serif;font-size:10.5px;
+    background:rgba(120,110,90,.1);color:var(--muted);padding:2px 7px;border-radius:5px}
+  .tag.blue{background:rgba(42,90,140,.13);color:var(--blue)}
+  .tag.amber{background:rgba(154,106,12,.14);color:var(--amber)}
+  .tag.green{background:rgba(59,109,17,.14);color:var(--green)}
+  .due-over{color:var(--red);font-weight:700}
+  .due-soon{color:var(--amber);font-weight:700}
+  .row-act{display:flex;gap:5px}
+  .icbtn{font-family:ui-sans-serif,system-ui,sans-serif;border:1px solid var(--line);background:var(--paper);
+    color:var(--muted);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:1;transition:.15s;display:flex;align-items:center;justify-content:center}
+  .icbtn:hover{color:var(--ink);border-color:var(--muted)}
+  .icbtn.del:hover{color:var(--red);border-color:var(--red)}
+
+  .filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .filters select,.filters input{width:auto;min-width:130px;font-size:12.5px;padding:7px 9px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--card)}
+  .seg button{font-family:ui-sans-serif,system-ui,sans-serif;border:none;background:none;color:var(--muted);
+    font-size:12px;font-weight:600;padding:7px 13px;cursor:pointer}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px}
+
+  .grp{margin-bottom:20px}
+  .grp-h{display:flex;align-items:center;gap:10px;margin:0 0 9px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .grp-h .gn{font-size:15px;font-weight:700}
+  .grp-h .gc{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);
+    background:rgba(120,110,90,.1);padding:1px 8px;border-radius:20px;font-weight:600}
+  .bar{height:6px;border-radius:4px;background:rgba(120,110,90,.16);overflow:hidden;flex:1;max-width:160px}
+  .bar > i{display:block;height:100%;background:var(--accent2);border-radius:4px}
+
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px}
+  .pcard .pc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:11px}
+  .pcard .pc-name{font-size:16px;font-weight:700;letter-spacing:-.2px}
+  .pcard .pc-sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);margin-top:2px}
+  .pcard .pc-pct{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .pcard .pc-body{display:flex;gap:18px;align-items:center}
+  .pcard .donut-wrap{flex-shrink:0;position:relative;width:104px;height:104px}
+  .pcard .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:ui-sans-serif,system-ui,sans-serif}
+  .pcard .donut-center .dc-v{font-size:22px;font-weight:800;line-height:1}
+  .pcard .donut-center .dc-l{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .pcard .bd{flex:1;min-width:0;font-family:ui-sans-serif,system-ui,sans-serif}
+  .pcard .bd-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
+  .pcard .bd-row:last-child{margin-bottom:0}
+  .pcard .bd-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+  .pcard .bd-name{color:var(--muted);width:74px;flex-shrink:0}
+  .pcard .bd-track{flex:1;height:7px;border-radius:4px;background:rgba(120,110,90,.14);overflow:hidden;min-width:30px}
+  .pcard .bd-track > i{display:block;height:100%;border-radius:4px}
+  .pcard .bd-n{font-weight:700;width:20px;text-align:right;flex-shrink:0}
+  .pcard .pc-foot{display:flex;gap:14px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;color:var(--muted)}
+  .pcard .pc-foot b{color:var(--ink);font-weight:700}
+
+  .report{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:34px 40px;box-shadow:var(--shadow);max-width:840px;margin:0 auto}
+  .report .rh{text-align:center;border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:24px}
+  .report .rh .rt{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif}
+  .report .rh h2{font-size:27px;font-weight:800;margin:7px 0 3px}
+  .report .rh .rp{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--muted)}
+  .report h4{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+    font-family:ui-sans-serif,system-ui,sans-serif;font-weight:700;margin:26px 0 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .report p.lead{font-size:15.5px;line-height:1.7}
+  .report .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:13px}
+  .report .rstat{text-align:center;padding:13px;border:1px solid var(--line);border-radius:8px}
+  .report .rstat .v{font-size:26px;font-weight:800;font-family:ui-sans-serif,system-ui,sans-serif}
+  .report .rstat .l{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;margin-top:3px}
+  .report ul{margin:0 0 0 4px;list-style:none}
+  .report ul li{padding:6px 0 6px 20px;position:relative;font-size:14.5px;border-bottom:1px dashed var(--line)}
+  .report ul li:last-child{border-bottom:none}
+  .report ul li::before{content:"";position:absolute;left:3px;top:13px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .rfoot{text-align:center;margin-top:30px;padding-top:16px;border-top:1px solid var(--line);
+    font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted)}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:760px){.twocol{grid-template-columns:1fr}.fld.span2{grid-column:span 1}.report{padding:24px 20px}}
+
+  .note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);
+    background:rgba(120,110,90,.07);border:1px dashed var(--line);border-radius:8px;padding:10px 13px;margin-bottom:14px}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);
+    color:var(--paper);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:600;
+    padding:11px 20px;border-radius:9px;opacity:0;transition:.3s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .seedbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .blockwhy{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--red);margin-top:2px}
+  .legend{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+
+  /* multi-assignee widget */
+  .owner-widget{border:1px solid var(--line);border-radius:7px;background:var(--paper);padding:6px 8px;display:flex;flex-direction:column;gap:6px;transition:.15s;}
+  .owner-widget:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(181,73,31,.13)}
+  .owner-tags{display:flex;flex-wrap:wrap;gap:5px;min-height:24px}
+  .owner-tag{display:inline-flex;align-items:center;gap:4px;font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:600;background:var(--ink);color:var(--paper);padding:3px 8px 3px 10px;border-radius:20px;line-height:1;}
+  .owner-tag button{background:none;border:none;color:inherit;cursor:pointer;padding:0;font-size:13px;line-height:1;opacity:.7;font-family:ui-sans-serif,system-ui,sans-serif;width:14px;height:14px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:.12s;}
+  .owner-tag button:hover{opacity:1;background:rgba(255,255,255,.2)}
+  .owner-row{display:flex;gap:6px;align-items:center}
+  .owner-row select{flex:1;font-size:12.5px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);}
+  .owner-row button.add-owner-btn{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap;transition:.13s;}
+  .owner-row button.add-owner-btn:hover{color:var(--ink);border-color:var(--muted)}
+  .owner-manage{display:flex;gap:6px;flex-wrap:wrap;padding-top:4px;border-top:1px dashed var(--line)}
+  .owner-manage button{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:600;border:1px dashed var(--line);background:none;color:var(--muted);border-radius:20px;padding:2px 10px;cursor:pointer;transition:.13s;}
+  .owner-manage button:hover{color:var(--ink);border-color:var(--ink)}
+  .owner-manage button.del-owner{color:var(--red);border-color:rgba(163,45,45,.3)}
+  .owner-manage button.del-owner:hover{background:rgba(163,45,45,.08);border-color:var(--red)}
+
+  /* Programme Tracker */
+  .prog-section{margin-bottom:28px}
+  .prog-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;
+    background:rgba(120,110,90,.07);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;cursor:pointer}
+  .prog-section-head .psn{font-size:14px;font-weight:700}
+  .prog-section-head .psc{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted)}
+  .prog-section-head .psbar{flex:1;max-width:160px;height:6px;border-radius:4px;background:rgba(120,110,90,.16);overflow:hidden}
+  .prog-section-head .psbar i{display:block;height:100%;background:var(--accent2);border-radius:4px}
+  .prog-milestones{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:9px}
+  .prog-milestone{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;box-shadow:var(--shadow)}
+  .prog-milestone .pm-name{font-size:13px;font-weight:600;margin-bottom:7px}
+  .prog-milestone select{font-size:12px;padding:5px 7px;border-radius:6px}
+  .ms-notstarted{background:rgba(122,116,104,.13);color:var(--muted)}
+  .ms-inprogress{background:rgba(42,90,140,.13);color:var(--blue)}
+  .ms-submitted{background:rgba(154,106,12,.13);color:var(--amber)}
+  .ms-approved{background:rgba(59,109,17,.14);color:var(--green)}
+
+  /* Weekly Review scoring */
+  .review-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:14px}
+  .review-card h4{font-size:14px;font-weight:700;margin-bottom:12px}
+  .score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .score-row{display:flex;flex-direction:column;gap:4px}
+  .score-row label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .score-row .score-wrap{display:flex;align-items:center;gap:8px}
+  .score-row input[type=range]{padding:0;border:none;background:none;flex:1;accent-color:var(--accent)}
+  .score-row input[type=range]:focus{box-shadow:none}
+  .score-val{font-size:14px;font-weight:800;min-width:22px;text-align:right;font-family:ui-sans-serif,system-ui,sans-serif}
+  .review-history{margin-top:12px}
+  .rh-row{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12.5px;padding:7px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+  .rh-row:last-child{border-bottom:none}
+  .rh-scores{display:flex;gap:8px;flex-wrap:wrap}
+  .rh-score{font-size:11px;color:var(--muted)}
+  .rh-total{font-weight:700;color:var(--accent);white-space:nowrap}
+
+  /* intern selector tabs */
+  .intern-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;font-family:ui-sans-serif,system-ui,sans-serif}
+  .intern-tab{font-family:inherit;font-size:12.5px;font-weight:600;border:1.5px solid var(--line);background:var(--paper);
+    color:var(--muted);padding:6px 14px;border-radius:20px;cursor:pointer;transition:.13s}
+  .intern-tab:hover{color:var(--ink);border-color:var(--muted)}
+  .intern-tab.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+  /* phase timeline */
+  .phase-timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+  .phase-block{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;box-shadow:var(--shadow)}
+  .phase-block .ph-weeks{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .phase-block .ph-name{font-size:13px;font-weight:700;margin:4px 0 8px}
+  .phase-block .ph-bar{height:5px;border-radius:4px;background:rgba(120,110,90,.15);overflow:hidden}
+  .phase-block .ph-bar i{display:block;height:100%;background:var(--accent2);border-radius:4px}
+  .phase-block .ph-pct{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>WOA Intern Tracker</h1>
+      <div class="sub">Tasks · Milestones · Mentorship</div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-v="entry" class="on">Task Entry</button>
+    <button data-v="project">Project View</button>
+    <button data-v="intern">Intern View</button>
+    <button data-v="programme">Programme Tracker</button>
+    <button data-v="weekly">Weekly Review</button>
+    <button data-v="monthly">Monthly Report</button>
+    <button data-v="portal">Intern Portal</button>
+    <button data-v="sync">Sync &amp; Settings</button>
+  </nav>
+
+  <!-- ============ TASK ENTRY ============ -->
+  <section class="view on" id="v-entry">
+    <div class="vhead"><h2>Task Entry</h2>
+      <p>One task, entered once. Everything else in this app is generated from here — no duplicate effort.</p></div>
+
+    <div class="card">
+      <h3 id="formTitle">New Task</h3>
+      <div class="ch-sub">Assign tasks to interns. Task Type distinguishes studio work from programme assignments.</div>
+
+      <div class="form-grid">
+        <div class="fld span2"><label>Task</label><input id="f_title" placeholder="What needs to get done"></div>
+
+        <div class="fld"><label>Task Type</label>
+          <select id="f_tasktype">
+            <option value="Studio Assignment">Studio Assignment</option>
+            <option value="Programme Assignment">Programme Assignment</option>
+            <option value="Self Initiated">Self Initiated</option>
+          </select>
+        </div>
+        <div class="fld"><label>Project</label>
+          <select id="f_project" onchange="handleAddNew(this,'project')"></select>
+        </div>
+
+        <!-- MULTI-ASSIGNEE WIDGET -->
+        <div class="fld span2">
+          <label>Assigned To (Interns)</label>
+          <div class="owner-widget" id="ownerWidget">
+            <div class="owner-tags" id="ownerTags"></div>
+            <div class="owner-row">
+              <select id="ownerPickDrop" onchange="pickOwnerFromDrop()">
+                <option value="">— add intern —</option>
+              </select>
+              <button class="add-owner-btn" onclick="addOwnerChip()">+ New intern</button>
+            </div>
+            <div class="owner-manage" id="ownerManage"></div>
+          </div>
+        </div>
+
+        <div class="fld"><label>Assigned By</label>
+          <select id="f_assignedby" onchange="handleAddNewMentor(this)"></select>
+        </div>
+
+        <div class="fld"><label>Priority</label>
+          <select id="f_priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
+        </div>
+        <div class="fld"><label>Status</label>
+          <select id="f_status" onchange="toggleWaiting()">
+            <option>To Do</option>
+            <option>In Progress</option>
+            <option>Waiting</option>
+            <option>Review</option>
+            <option>Done</option>
+          </select>
+        </div>
+        <div class="fld"><label>Due Date</label><input id="f_due" type="date"></div>
+        <div class="fld"><label>Category</label>
+          <input id="f_category" list="catList" placeholder="e.g. Drawings, Research">
+          <datalist id="catList"></datalist>
+        </div>
+
+        <!-- WAITING ON — only shown when status = Waiting -->
+        <div class="fld" id="wrap_waitingon" style="display:none"><label>Waiting On</label>
+          <select id="f_waitingon">
+            <option value="None">None</option>
+            <option>Mentor Review</option>
+            <option>Client Feedback</option>
+            <option>Design Approval</option>
+            <option>Site Information</option>
+            <option>Consultant Input</option>
+            <option>Material Sample</option>
+            <option>Vendor Response</option>
+            <option>Budget Approval</option>
+            <option>Team Member Input</option>
+            <option>Programme Review</option>
+            <option>Software / Technical Issue</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fld span2" id="wrap_waitingdetails" style="display:none"><label>Waiting Details</label>
+          <input id="f_waitingdetails" placeholder="e.g. Need structural consultant beam sizes.">
+        </div>
+
+        <!-- NEXT ACTION — always visible -->
+        <div class="fld span2"><label>Next Action</label>
+          <input id="f_nextaction" placeholder="e.g. Follow up with consultant on Friday.">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="saveTask()" id="saveBtn">Add Task</button>
+        <button class="btn ghost" onclick="resetForm()">Clear</button>
+        <span class="hint" id="editHint"></span>
+      </div>
+    </div>
+
+    <div class="seedbar">
+      <span class="hint">Data saved automatically and persists across sessions.</span>
+      <button class="btn ghost sm" onclick="loadSample()">Load sample data</button>
+      <button class="btn ghost sm" onclick="wipeAll()">Clear all</button>
+    </div>
+
+    <div class="filters">
+      <input id="search" placeholder="Search tasks…" oninput="render()">
+      <select id="fType" onchange="render()">
+        <option value="">All task types</option>
+        <option>Studio Assignment</option><option>Programme Assignment</option><option>Self Initiated</option>
+      </select>
+      <select id="fStatus" onchange="render()"><option value="">All statuses</option><option>To Do</option><option>In Progress</option><option>Waiting</option><option>Review</option><option>Done</option></select>
+      <select id="fOwner" onchange="render()"><option value="">All interns</option></select>
+    </div>
+
+    <div class="tbl-wrap">
+      <table id="allTbl">
+        <thead><tr>
+          <th onclick="setSort('title')">Task</th>
+          <th onclick="setSort('tasktype')">Type</th>
+          <th onclick="setSort('project')">Project</th>
+          <th onclick="setSort('owner')">Assigned To</th>
+          <th onclick="setSort('assignedby')">Assigned By</th>
+          <th onclick="setSort('priority')">Priority</th>
+          <th onclick="setSort('status')">Status</th>
+          <th onclick="setSort('due')">Due</th>
+          <th onclick="setSort('category')">Category</th>
+          <th>Waiting On</th><th></th>
+        </tr></thead>
+        <tbody id="allBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ PROJECT VIEW ============ -->
+  <section class="view" id="v-project">
+    <div class="vhead"><h2>Project View</h2><p>Tasks grouped by project, with live completion bars and intern assignment.</p></div>
+    <div class="metrics" id="projMetrics"></div>
+    <div id="projGroups"></div>
+  </section>
+
+  <!-- ============ INTERN VIEW ============ -->
+  <section class="view" id="v-intern">
+    <div class="vhead"><h2>Intern View</h2><p>Per-intern workload — tasks assigned, completed, in progress, and blocked. Primary mentor review screen.</p></div>
+    <div id="internGroups"></div>
+  </section>
+
+  <!-- ============ PROGRAMME TRACKER ============ -->
+  <section class="view" id="v-programme">
+    <div class="vhead"><h2>Programme Tracker</h2><p>Internship milestone completion — separate from task management. Track each intern's journey through the programme.</p></div>
+
+    <div class="intern-tabs" id="progInternTabs"></div>
+
+    <div class="phase-timeline" id="phaseTimeline"></div>
+
+    <div id="programmeContent"></div>
+  </section>
+
+  <!-- ============ WEEKLY REVIEW ============ -->
+  <section class="view" id="v-weekly">
+    <div class="vhead"><h2>Weekly Review</h2><p>This week at a glance — assigned, completed, blocked, and what's due. Includes mentor scoring for each intern.</p></div>
+
+    <div class="metrics" id="weekMetrics"></div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h3>Mentor Review Scores</h3>
+      <div class="ch-sub">Score each intern this week across six criteria. Scores are saved and appear in the monthly report.</div>
+      <div class="intern-tabs" id="reviewInternTabs" style="margin-bottom:14px"></div>
+      <div id="reviewForm"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h3>Action Required</h3>
+      <div class="ch-sub">All Waiting tasks grouped by what they're waiting on — what is preventing progress right now.</div>
+      <div id="weekWaiting"></div>
+    </div>
+
+    <div class="twocol">
+      <div class="card"><h3>In Review — needs mentor sign-off</h3><div class="ch-sub">Tasks submitted by interns, awaiting mentor review</div><div id="weekReview"></div></div>
+      <div class="card"><h3>Due this week</h3><div class="ch-sub">Open tasks with a due date in the next 7 days</div><div id="weekDue"></div></div>
+    </div>
+    <div class="card"><h3>Completed this period</h3><div class="ch-sub">Recently finished work</div><div id="weekDone"></div></div>
+  </section>
+
+  <!-- ============ MONTHLY REPORT ============ -->
+  <section class="view" id="v-monthly">
+    <div class="vhead"><h2>Monthly Performance Report</h2>
+      <p>Generated automatically. No manual compilation.</p></div>
+    <div class="actions" style="margin-bottom:16px">
+      <span class="hint">Reporting period:</span>
+      <select id="monthSel" onchange="render()" style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:8px 10px;width:auto;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink)"></select>
+      <span class="hint">Intern:</span>
+      <select id="reportInternSel" onchange="renderMonthly()" style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:8px 10px;width:auto;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink)"></select>
+      <button class="btn ghost sm" onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <div id="reportOut"></div>
+  </section>
+
+  <!-- ============ INTERN PORTAL ============ -->
+  <section class="view" id="v-portal">
+    <div class="vhead"><h2>Intern Portal</h2>
+      <p>A filtered view of the intern's own data — tasks, programme progress, feedback and learning log.</p></div>
+
+    <!-- Intern selector -->
+    <div class="intern-tabs" id="portalInternTabs"></div>
+
+    <!-- Portal content rendered here -->
+    <div id="portalContent"></div>
+  </section>
+
+  <!-- ============ SYNC ============ -->
+  <section class="view" id="v-sync">
+    <div class="vhead"><h2>Sync &amp; Settings</h2><p>One shared database URL — every device on the same link sees the same data in real time.</p></div>
+    <div class="card">
+      <h3>Team Database</h3>
+      <div class="ch-sub">Create a free Firebase Realtime Database and paste the URL below.</div>
+      <div class="fld" style="font-family:ui-sans-serif,system-ui,sans-serif;margin-top:12px">
+        <label>Firebase Database URL</label>
+        <input id="dbUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" style="font-family:ui-monospace,monospace;font-size:13px">
+      </div>
+      <div class="actions" style="margin-top:10px">
+        <button class="btn" onclick="saveDbUrl()">Save &amp; connect</button>
+        <button class="btn ghost" onclick="pullNow()" id="pullBtn" style="display:none">&#x2193; Pull now</button>
+        <button class="btn ghost" onclick="copyShareLink()" id="shareLinkBtn" style="display:none">&#x1F4CB; Copy shareable link</button>
+        <span class="hint" id="syncState" style="margin-left:6px">Not connected — data stored in this browser only.</span>
+      </div>
+      <div class="legend" id="syncMeta"></div>
+      <label class="hint" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-top:10px">
+        <input type="checkbox" id="autoSync" onchange="toggleAuto()" style="width:auto;margin:0">
+        Auto-sync: push every change, auto-refresh every 10 s
+        <span id="liveIndicator" style="display:none;background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;letter-spacing:.05em">&#x25CF; LIVE</span>
+      </label>
+    </div>
+
+    <!-- Intern Directory -->
+    <div class="card" style="margin-top:16px">
+      <h3>Intern Directory</h3>
+      <div class="ch-sub">Add, edit or remove interns. Display format everywhere: CODE · Name (e.g. EN038 · Ananya).</div>
+      <div id="internDirectory" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>One-time setup — 2 minutes</h3>
+      <div class="ch-sub">Do this once. Share the link with your team — they auto-connect instantly.</div>
+      <ol style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;line-height:1.9;margin:12px 0 0 18px;color:var(--ink)">
+        <li>Go to <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent)">console.firebase.google.com</a> → create a free project.</li>
+        <li>In the sidebar: <b>Build &rarr; Realtime Database &rarr; Create database</b>.</li>
+        <li>Choose <b>Start in test mode</b>.</li>
+        <li>Copy the URL shown and paste above. Click <b>Save &amp; connect</b>.</li>
+        <li>Click <b>&#x1F4CB; Copy shareable link</b> and send to your team. Done.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Storage ──────────────────────────────────────────────────────────────────
+const KEY       = 'woa:tasks:v2';
+const DBKEY     = 'woa:dburl:v1';
+const OWNERKEY  = 'woa:owners:v2';
+const PROJKEY   = 'woa:projects:v1';
+const MENTORKEY = 'woa:mentors:v1';
+const PROGKEY   = 'woa:prog:v1';
+const REVKEY    = 'woa:reviews:v1';
+const INTERNKEY = 'woa:interns:v1';
+const LLKEY     = 'woa:learninglog:v1';
+
+let tasks    = [];
+// INTERNS: [{id, code, name, joiningDate, mentor, status}]
+// 'Ananya' is the sole default intern
+let INTERNS  = [{id:'intern_en038', code:'EN038', name:'Ananya', joiningDate:'', mentor:'', status:'Active'}];
+let OWNERS   = ['EN038 · Ananya']; // derived from INTERNS, kept in sync
+let PROJECTS = ['058_JewelOne Flagship','029_HBTS','042_FA Kannur','047_School'];
+let MENTORS  = ['Abhishek Raja','Alex','Subin'];
+// learningLog[internId] = [{id, date, title, notes}]
+let learningLog = {};
+// milestoneData[internDisplayName][sectionKey][milestoneKey] = status string
+let milestoneData = {};
+// reviews[internDisplayName] = [{date, scores:{...}, comment, weekLabel}]
+let reviews = {};
+
+let editId = null, sortKey = 'due', sortDir = 1;
+let dbUrl = '', autoSync = false, syncing = false, pollTimer = null;
+let selectedOwners = new Set();
+let activeProgIntern = null, activeReviewIntern = null;
+
+function hasWS(){ try{ return typeof window.storage!=='undefined'&&window.storage; }catch(e){ return false; } }
+async function lsGet(k){
+  if(hasWS()){ try{ const r=await window.storage.get(k); return r&&r.value?r.value:null; }catch(e){} }
+  try{ return localStorage.getItem(k); }catch(e){ return null; }
+}
+async function lsSet(k,v){
+  if(hasWS()){ try{ await window.storage.set(k,v); }catch(e){} }
+  try{ localStorage.setItem(k,v); }catch(e){}
+}
+
+async function load(){
+  const v  = await lsGet(KEY);   tasks = v ? JSON.parse(v) : [];
+  dbUrl    = (await lsGet(DBKEY))||'';
+  autoSync = (await lsGet('woa:autosync:v1'))==='1';
+  const iv = await lsGet(INTERNKEY); if(iv){ try{ INTERNS=JSON.parse(iv); }catch(e){} }
+  // Sync OWNERS from INTERNS (display name = "CODE · Name")
+  OWNERS = INTERNS.filter(i=>i.status==='Active').map(i=>internDisplayName(i));
+  const p  = await lsGet(PROJKEY);  if(p){ try{ PROJECTS=JSON.parse(p); }catch(e){} }
+  const m  = await lsGet(MENTORKEY);if(m){ try{ MENTORS=JSON.parse(m); }catch(e){} }
+  const pg = await lsGet(PROGKEY);  if(pg){ try{ milestoneData=JSON.parse(pg); }catch(e){} }
+  const rv = await lsGet(REVKEY);   if(rv){ try{ reviews=JSON.parse(rv); }catch(e){} }
+  const ll = await lsGet(LLKEY);    if(ll){ try{ learningLog=JSON.parse(ll); }catch(e){} }
+}
+function internDisplayName(i){ return `${i.code} · ${i.name}`; }
+function internByDisplayName(dn){ return INTERNS.find(i=>internDisplayName(i)===dn)||null; }
+function internById(id){ return INTERNS.find(i=>i.id===id)||null; }
+async function saveLists(){
+  await lsSet(INTERNKEY, JSON.stringify(INTERNS));
+  // Sync OWNERS from active interns
+  OWNERS = INTERNS.filter(i=>i.status==='Active').map(i=>internDisplayName(i));
+  await lsSet(OWNERKEY, JSON.stringify(OWNERS));
+  await lsSet(PROJKEY,  JSON.stringify(PROJECTS));
+  await lsSet(MENTORKEY,JSON.stringify(MENTORS));
+}
+async function persist(){
+  await lsSet(KEY, JSON.stringify(tasks));
+  await lsSet(PROGKEY, JSON.stringify(milestoneData));
+  await lsSet(REVKEY, JSON.stringify(reviews));
+  await lsSet(LLKEY, JSON.stringify(learningLog));
+  if(autoSync && dbUrl && !syncing) pushNow();
+}
+
+// ─── Sync ────────────────────────────────────────────────────────────────────
+function setSyncState(msg,ok){
+  const el=document.getElementById('syncState'); if(!el) return;
+  el.textContent=msg; el.style.color=ok===true?'var(--green)':ok===false?'var(--red)':'var(--muted)';
+}
+async function saveDbUrl(){
+  const u=document.getElementById('dbUrl').value.trim().replace(/\/+$/,'');
+  dbUrl=u; await lsSet(DBKEY,u);
+  const shareBtn=document.getElementById('shareLinkBtn'), pullBtn=document.getElementById('pullBtn');
+  if(shareBtn) shareBtn.style.display=u?'':'none';
+  if(pullBtn)  pullBtn.style.display=u?'':'none';
+  if(!u){ setSyncState('Disconnected.'); stopPolling(); render(); return; }
+  setSyncState('Connecting…');
+  await pullNow();
+  if(autoSync) startPolling();
+}
+async function pushNow(){
+  if(!dbUrl) return; syncing=true;
+  try{
+    const body=JSON.stringify({tasks,owners:OWNERS,projects:PROJECTS,mentors:MENTORS,milestoneData,reviews,interns:INTERNS,learningLog});
+    await fetch(dbUrl+'/woa.json',{method:'PUT',headers:{'Content-Type':'application/json'},body});
+    setSyncState('Synced ✓ at '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}),true);
+  }catch(e){ setSyncState('Save failed — check your database URL.',false); }
+  syncing=false;
+}
+async function pullNow(silent){
+  if(!dbUrl){ if(!silent) toast('Connect a Firebase database first'); return; }
+  if(syncing) return;
+  syncing=true; if(!silent) setSyncState('Loading…');
+  try{
+    const r=await fetch(dbUrl+'/woa.json?t='+Date.now()); const data=await r.json();
+    if(data && Array.isArray(data.tasks)){
+      tasks=data.tasks; await lsSet(KEY,JSON.stringify(tasks));
+      if(data.owners)  OWNERS=data.owners;
+      if(data.projects) PROJECTS=data.projects;
+      if(data.mentors) MENTORS=data.mentors;
+      if(data.milestoneData) milestoneData=data.milestoneData;
+      if(data.reviews) reviews=data.reviews;
+      if(data.interns) INTERNS=data.interns;
+      if(data.learningLog) learningLog=data.learningLog;
+      await saveLists();
+      render();
+      setSyncState('Synced ✓ at '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}),true);
+      document.getElementById('syncMeta').textContent=tasks.length+' tasks in shared database.';
+    } else if(data===null && tasks.length>0){ syncing=false; await pushNow(); syncing=true; }
+  }catch(e){ if(!silent) setSyncState('Connection failed.',false); }
+  syncing=false;
+}
+async function toggleAuto(){
+  autoSync=document.getElementById('autoSync').checked;
+  await lsSet('woa:autosync:v1',autoSync?'1':'0');
+  if(autoSync&&dbUrl){ await pushNow(); startPolling(); } else stopPolling();
+}
+function startPolling(){
+  stopPolling(); if(!dbUrl||!autoSync) return;
+  pollTimer=setInterval(()=>{ if(dbUrl&&autoSync&&!syncing) pullNow(true); },10000);
+  const li=document.getElementById('liveIndicator'); if(li) li.style.display='';
+}
+function stopPolling(){
+  if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+  const li=document.getElementById('liveIndicator'); if(li) li.style.display='none';
+}
+function copyShareLink(){
+  if(!dbUrl){ toast('Connect a database first'); return; }
+  const link=location.origin+location.pathname+'#db='+encodeURIComponent(dbUrl);
+  navigator.clipboard.writeText(link).then(()=>toast('Shareable link copied!')).catch(()=>prompt('Copy:',link));
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const uid    = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const todayISO = ()=>new Date().toISOString().slice(0,10);
+function fmtDate(d){ if(!d) return '—'; return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function daysUntil(d){ if(!d) return null; return Math.round((new Date(d+'T00:00:00')-new Date(todayISO()+'T00:00:00'))/864e5); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1900); }
+function cap(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
+
+function ownerArr(t){
+  if(Array.isArray(t.owners) && t.owners.length) return t.owners.filter(Boolean);
+  if(t.owner && t.owner!=='Unassigned') return t.owner.split(',').map(s=>s.trim()).filter(Boolean);
+  return [];
+}
+function ownerStr(t){ const a=ownerArr(t); return a.length ? a.join(', ') : 'Unassigned'; }
+
+function statusPill(s){
+  const map={'To Do':'st-todo','In Progress':'st-prog','Waiting':'st-wait','Review':'st-review','Done':'st-done'};
+  return `<span class="pill dot ${map[s]||'st-todo'}">${s}</span>`;
+}
+function prioPill(p){
+  const map={'High':'pr-high','Medium':'pr-med','Low':'pr-low'};
+  return `<span class="pill ${map[p]||'pr-med'}">${p}</span>`;
+}
+function dueCell(d,status){
+  if(!d) return '<span class="meta">—</span>';
+  const n=daysUntil(d); let cls='';
+  if(status!=='Done'){ if(n<0) cls='due-over'; else if(n<=7) cls='due-soon'; }
+  return `<span class="${cls}">${fmtDate(d)}</span>`;
+}
+function ttTag(tt){
+  const map={'Studio Assignment':'','Programme Assignment':'blue','Self Initiated':'amber'};
+  return `<span class="tag ${map[tt]||''}">${escapeHtml(tt||'Studio Assignment')}</span>`;
+}
+// Waiting On label for display
+function waitingLabel(t){
+  if(t.status!=='Waiting') return '';
+  return t.waitingon && t.waitingon!=='None' ? t.waitingon : '';
+}
+
+// ─── Milestone definitions ────────────────────────────────────────────────────
+const PROG_SECTIONS = [
+  { key:'foundations', label:'Foundations & Research', milestones:[
+      'Daily Presentations','Material Study','Anthropometry Study','Website Development'
+  ]},
+  { key:'practical', label:'Practical Exposure', milestones:[
+      'Site Documentation','Analysis Reports','Sketch Submission','POV Video'
+  ]},
+  { key:'design', label:'Design & Specialization', milestones:[
+      'Product Design Exercise','Project Pitch'
+  ]},
+  { key:'growth', label:'Growth & Contribution', milestones:[
+      'Strength Assessment','Skill Gap Analysis','Project Contribution'
+  ]},
+  { key:'advanced', label:'Advanced Contribution', milestones:[
+      'Hobby Project','Project Ownership'
+  ]},
+  { key:'reflection', label:'Final Reflection', milestones:[
+      'Reflection Report','Final Presentation'
+  ]}
+];
+const MS_STATUSES = ['Not Started','In Progress','Submitted','Approved'];
+const MS_CLASSES  = {'Not Started':'ms-notstarted','In Progress':'ms-inprogress','Submitted':'ms-submitted','Approved':'ms-approved'};
+
+const PHASES = [
+  { weeks:'Week 1–2',  label:'Foundations & Research',  keys:['foundations'] },
+  { weeks:'Week 3–4',  label:'Practical Exposure',       keys:['practical'] },
+  { weeks:'Week 5–10', label:'Project Integration',      keys:['design','growth'] },
+  { weeks:'Week 10–22',label:'Contribution & Growth',    keys:['advanced'] },
+  { weeks:'Week 22–24',label:'Reflection & Completion',  keys:['reflection'] },
+];
+
+const REVIEW_CRITERIA = ['Initiative','Communication','Technical Skill','Curiosity','Ownership','Professionalism'];
+
+// ─── Owner widget ─────────────────────────────────────────────────────────────
+function renderOwnerWidget(){
+  const tagsEl  = document.getElementById('ownerTags');
+  const dropEl  = document.getElementById('ownerPickDrop');
+  const manageEl= document.getElementById('ownerManage');
+  if(!tagsEl||!dropEl||!manageEl) return;
+  tagsEl.innerHTML = [...selectedOwners].map(name=>
+    `<span class="owner-tag">${escapeHtml(name)}<button title="Remove" onclick="removeOwnerTag('${escapeHtml(name)}')">×</button></span>`
+  ).join('');
+  // OWNERS is derived from INTERNS; show all active interns in dropdown
+  const available=OWNERS.filter(o=>!selectedOwners.has(o));
+  dropEl.innerHTML='<option value="">— add intern —</option>'+
+    available.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+  // Hide manage section — intern management is in Intern Directory
+  manageEl.innerHTML='<span class="hint">Manage interns via Sync &amp; Settings → Intern Directory</span>';
+}
+function pickOwnerFromDrop(){
+  const drop=document.getElementById('ownerPickDrop'); const val=drop.value;
+  if(!val) return; selectedOwners.add(val); drop.value=''; renderOwnerWidget();
+}
+function removeOwnerTag(name){ selectedOwners.delete(name); renderOwnerWidget(); }
+async function addOwnerChip(){
+  // For task form — only lets you pick from INTERNS directory
+  toast('Use Intern Directory in Sync & Settings to add interns.');
+}
+async function deleteOwnerFromList(name){
+  // No-op from widget — removal handled by Intern Directory
+  toast('Use Intern Directory to manage interns.');
+}
+
+// ─── Assigned-by select ───────────────────────────────────────────────────────
+function refreshMentorSelect(){
+  const sel=document.getElementById('f_assignedby'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML=MENTORS.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+  sel.innerHTML+='<option value="__addmentor__">+ Add mentor…</option>';
+  if(cur) sel.value=cur;
+}
+async function handleAddNewMentor(sel){
+  if(sel.value!=='__addmentor__') return;
+  const name=(prompt('Mentor / architect name:')||'').trim();
+  if(!name){ sel.value=MENTORS[0]||''; refreshMentorSelect(); return; }
+  if(!MENTORS.includes(name)) MENTORS.push(name);
+  await saveLists(); refreshMentorSelect(); sel.value=name;
+}
+
+// ─── Task CRUD ────────────────────────────────────────────────────────────────
+function toggleWaiting(){
+  const s=document.getElementById('f_status').value;
+  const isWaiting=s==='Waiting';
+  document.getElementById('wrap_waitingon').style.display=isWaiting?'flex':'none';
+  document.getElementById('wrap_waitingdetails').style.display=isWaiting?'flex':'none';
+}
+async function saveTask(){
+  const title=document.getElementById('f_title').value.trim();
+  if(!title){ toast('Task name required'); return; }
+  const status=document.getElementById('f_status').value;
+  const ownersArr=[...selectedOwners];
+  const isWaiting=status==='Waiting';
+  const rec={
+    id: editId||uid(),
+    tasktype: document.getElementById('f_tasktype').value,
+    title,
+    project: document.getElementById('f_project').value.trim(),
+    owners: ownersArr,
+    owner: ownersArr.join(', ')||'Unassigned',
+    assignedby: document.getElementById('f_assignedby').value||'',
+    priority: document.getElementById('f_priority').value,
+    status,
+    due: document.getElementById('f_due').value,
+    category: document.getElementById('f_category').value.trim()||'General',
+    waitingon: isWaiting?(document.getElementById('f_waitingon').value||'None'):'None',
+    waitingdetails: isWaiting?(document.getElementById('f_waitingdetails').value.trim()||''):'',
+    nextaction: document.getElementById('f_nextaction').value.trim()||'',
+    created: editId?(tasks.find(t=>t.id===editId)||{}).created||todayISO():todayISO(),
+    doneDate: status==='Done'?(editId&&tasks.find(t=>t.id===editId)&&tasks.find(t=>t.id===editId).doneDate||todayISO()):''
+  };
+  if(editId){ tasks=tasks.map(t=>t.id===editId?rec:t); toast('Task updated'); }
+  else { tasks.push(rec); toast('Task added'); }
+  await persist(); resetForm(); render();
+}
+function editTask(id){
+  const t=tasks.find(x=>x.id===id); if(!t) return;
+  editId=id;
+  document.getElementById('f_title').value=t.title;
+  document.getElementById('f_tasktype').value=t.tasktype||'Studio Assignment';
+  document.getElementById('f_project').value=t.project||'';
+  selectedOwners=new Set(ownerArr(t));
+  document.getElementById('f_priority').value=t.priority;
+  document.getElementById('f_status').value=t.status;
+  document.getElementById('f_due').value=t.due;
+  document.getElementById('f_category').value=t.category;
+  document.getElementById('f_waitingon').value=t.waitingon||'None';
+  document.getElementById('f_waitingdetails').value=t.waitingdetails||'';
+  document.getElementById('f_nextaction').value=t.nextaction||'';
+  toggleWaiting();
+  refreshLists(); refreshMentorSelect();
+  if(t.assignedby) document.getElementById('f_assignedby').value=t.assignedby;
+  document.getElementById('f_project').value=t.project||'';
+  document.getElementById('formTitle').textContent='Edit Task';
+  document.getElementById('saveBtn').textContent='Save Changes';
+  document.getElementById('editHint').textContent='Editing existing task';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function delTask(id){
+  tasks=tasks.filter(t=>t.id!==id);
+  await persist(); render(); toast('Task deleted');
+}
+async function quickDone(id){
+  const t=tasks.find(x=>x.id===id); if(!t) return;
+  t.status='Done'; t.waitingon='None'; t.waitingdetails=''; t.doneDate=todayISO();
+  await persist(); render(); toast('Marked done');
+}
+function resetForm(){
+  editId=null; selectedOwners=new Set();
+  ['f_title','f_due','f_category','f_waitingdetails','f_nextaction'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('f_project').value='';
+  document.getElementById('f_tasktype').value='Studio Assignment';
+  document.getElementById('f_priority').value='Medium';
+  document.getElementById('f_status').value='To Do';
+  document.getElementById('f_waitingon').value='None';
+  refreshLists(); refreshMentorSelect(); toggleWaiting();
+  document.getElementById('formTitle').textContent='New Task';
+  document.getElementById('saveBtn').textContent='Add Task';
+  document.getElementById('editHint').textContent='';
+}
+
+function populateSelect(id, items, current, allowBlank){
+  const el=document.getElementById(id); if(!el) return;
+  const opts=[];
+  if(allowBlank) opts.push('<option value="">— select —</option>');
+  items.forEach(v=>opts.push(`<option value="${escapeHtml(v)}"${v===current?' selected':''}>${escapeHtml(v)}</option>`));
+  opts.push('<option value="__add__">+ Add new…</option>');
+  el.innerHTML=opts.join('');
+  if(current && !items.includes(current)){
+    const o=document.createElement('option'); o.value=current; o.textContent=current; o.selected=true;
+    el.insertBefore(o,el.firstChild);
+  } else if(current){ el.value=current; }
+}
+function refreshLists(){
+  const projSet=[...new Set(PROJECTS.concat(tasks.filter(t=>t.project).map(t=>t.project)))];
+  const cats=[...new Set(tasks.map(t=>t.category))].sort();
+  populateSelect('f_project', projSet, document.getElementById('f_project').value||'', true);
+  renderOwnerWidget();
+  document.getElementById('catList').innerHTML=cats.map(c=>`<option value="${escapeHtml(c)}">`).join('');
+  const fo=document.getElementById('fOwner'); const cur=fo.value;
+  fo.innerHTML='<option value="">All interns</option>'+OWNERS.map(o=>`<option>${escapeHtml(o)}</option>`).join('');
+  fo.value=cur;
+}
+async function handleAddNew(sel, kind){
+  if(sel.value!=='__add__') return;
+  const name=(prompt('Add a new project:')||'').trim();
+  if(!name){ sel.value=''; refreshLists(); return; }
+  if(!PROJECTS.includes(name)) PROJECTS.push(name);
+  await saveLists(); refreshLists(); sel.value=name;
+}
+
+// ─── Metrics ─────────────────────────────────────────────────────────────────
+function metricsFor(list){
+  const assigned=list.length, completed=list.filter(t=>t.status==='Done').length;
+  const waiting=list.filter(t=>t.status==='Waiting').length;
+  const inReview=list.filter(t=>t.status==='Review').length;
+  const rate=assigned?Math.round(completed/assigned*100):0;
+  const adjDen=assigned-waiting;
+  const adjRate=adjDen>0?Math.round(completed/adjDen*100):0;
+  // waiting breakdown by waitingon category
+  const wt={};
+  list.filter(t=>t.status==='Waiting').forEach(t=>{ const k=t.waitingon||'Other'; wt[k]=(wt[k]||0)+1; });
+  return {assigned,completed,waiting,inReview,rate,adjRate,wt};
+}
+function metricCards(m,container){
+  document.getElementById(container).innerHTML=`
+    <div class="metric"><div class="ml">Tasks Assigned</div><div class="mv">${m.assigned}</div></div>
+    <div class="metric good"><div class="ml">Completed</div><div class="mv">${m.completed}</div></div>
+    <div class="metric warn"><div class="ml">Waiting</div><div class="mv">${m.waiting}</div></div>
+    <div class="metric"><div class="ml">In Review</div><div class="mv">${m.inReview}</div></div>
+    <div class="metric accent"><div class="ml">Completion Rate</div><div class="mv">${m.rate}<span class="mvs">%</span></div></div>`;
+}
+
+// ─── Sort ─────────────────────────────────────────────────────────────────────
+function setSort(k){ if(sortKey===k) sortDir*=-1; else {sortKey=k;sortDir=1;} render(); }
+function sortList(list){
+  const prioRank={High:0,Medium:1,Low:2};
+  return [...list].sort((a,b)=>{
+    let av,bv;
+    switch(sortKey){
+      case 'priority': av=prioRank[a.priority]; bv=prioRank[b.priority]; break;
+      case 'due': av=a.due||'9999'; bv=b.due||'9999'; break;
+      default: av=(a[sortKey]||'').toString().toLowerCase(); bv=(b[sortKey]||'').toString().toLowerCase();
+    }
+    if(av<bv) return -1*sortDir; if(av>bv) return 1*sortDir; return 0;
+  });
+}
+
+// ─── Render: Entry ────────────────────────────────────────────────────────────
+function renderEntry(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const ft=document.getElementById('fType').value;
+  const fs=document.getElementById('fStatus').value;
+  const fo=document.getElementById('fOwner').value;
+  let list=tasks.filter(t=>{
+    if(ft && t.tasktype!==ft) return false;
+    if(fs && t.status!==fs) return false;
+    if(fo && !ownerArr(t).includes(fo)) return false;
+    if(q && !(t.title+t.project+t.category+ownerStr(t)).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  list=sortList(list);
+  const body=document.getElementById('allBody');
+  if(!list.length){ body.innerHTML='<tr><td colspan="11"><div class="empty">No tasks yet. Add one above, or load sample data.</div></td></tr>'; return; }
+  body.innerHTML=list.map(t=>`
+    <tr>
+      <td>
+        <div class="tt">${escapeHtml(t.title)}</div>
+        ${t.status==='Waiting'&&t.waitingdetails?`<div class="blockwhy" style="color:var(--amber)">⏳ ${escapeHtml(t.waitingdetails)}</div>`:''}
+        ${t.nextaction?`<div class="meta" style="margin-top:2px">→ ${escapeHtml(t.nextaction)}</div>`:''}
+      </td>
+      <td>${ttTag(t.tasktype)}</td>
+      <td>${escapeHtml(t.project||'—')}</td>
+      <td>${escapeHtml(ownerStr(t))}</td>
+      <td class="meta">${escapeHtml(t.assignedby||'—')}</td>
+      <td>${prioPill(t.priority)}</td>
+      <td>${statusPill(t.status)}</td>
+      <td>${dueCell(t.due,t.status)}</td>
+      <td><span class="tag">${escapeHtml(t.category)}</span></td>
+      <td class="meta">${t.status==='Waiting'&&t.waitingon&&t.waitingon!=='None'?`<span class="tag amber">${escapeHtml(t.waitingon)}</span>`:'—'}</td>
+      <td><div class="row-act">
+        ${t.status!=='Done'?`<button class="icbtn" title="Mark done" onclick="quickDone('${t.id}')">✓</button>`:''}
+        <button class="icbtn" title="Edit" onclick="editTask('${t.id}')">✎</button>
+        <button class="icbtn del" title="Delete" onclick="delTask('${t.id}')">×</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+// ─── Render: Project View ─────────────────────────────────────────────────────
+function renderProject(){
+  metricCards(metricsFor(tasks),'projMetrics');
+  const groups={};
+  tasks.forEach(t=>{ const k=t.project||'(unassigned)'; (groups[k]=groups[k]||[]).push(t); });
+  const keys=Object.keys(groups).sort();
+  const out=document.getElementById('projGroups');
+  if(!keys.length){ out.innerHTML='<div class="empty">No tasks yet.</div>'; return; }
+  out.innerHTML=keys.map(k=>{
+    const g=groups[k]; const m=metricsFor(g);
+    const interns=[...new Set(g.flatMap(ownerArr))];
+    const rows=sortList(g).map(t=>`
+      <tr>
+        <td><div class="tt">${escapeHtml(t.title)}</div>${t.status==='Waiting'&&t.waitingdetails?`<div class="blockwhy" style="color:var(--amber)">⏳ ${escapeHtml(t.waitingdetails)}</div>`:''}</td>
+        <td>${ttTag(t.tasktype)}</td>
+        <td>${escapeHtml(ownerStr(t))}</td>
+        <td>${prioPill(t.priority)}</td>
+        <td>${statusPill(t.status)}</td>
+        <td>${dueCell(t.due,t.status)}</td>
+        <td><span class="tag">${escapeHtml(t.category)}</span></td>
+      </tr>`).join('');
+    return `<div class="grp">
+      <div class="grp-h">
+        <span class="gn">${escapeHtml(k)}</span>
+        <span class="gc">${m.completed}/${m.assigned} done</span>
+        <div class="bar"><i style="width:${m.rate}%"></i></div>
+        <span class="gc">${m.rate}%</span>
+        ${m.waiting?`<span class="gc" style="color:var(--amber)">${m.waiting} waiting</span>`:''}
+        <span class="gc" style="color:var(--muted)">${interns.length} intern${interns.length!==1?'s':''}</span>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Task</th><th>Type</th><th>Assigned To</th><th>Priority</th><th>Status</th><th>Due</th><th>Category</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Render: Intern View ──────────────────────────────────────────────────────
+function renderIntern(){
+  const allInterns=[...new Set(tasks.flatMap(ownerArr))].sort();
+  const out=document.getElementById('internGroups');
+  if(!allInterns.length){ out.innerHTML='<div class="empty">No tasks assigned yet.</div>'; return; }
+  out.innerHTML=allInterns.map(o=>{
+    const g=tasks.filter(t=>ownerArr(t).includes(o));
+    const m=metricsFor(g);
+    const prog=g.filter(t=>t.status==='In Progress').length;
+    const rows=sortList(g).map(t=>`
+      <tr>
+        <td>
+          <div class="tt">${escapeHtml(t.title)}</div>
+          ${t.status==='Waiting'&&t.waitingdetails?`<div class="blockwhy" style="color:var(--amber)">⏳ ${escapeHtml(t.waitingdetails)}</div>`:''}
+          ${t.nextaction?`<div class="meta" style="margin-top:2px">→ ${escapeHtml(t.nextaction)}</div>`:''}
+        </td>
+        <td>${ttTag(t.tasktype)}</td>
+        <td>${escapeHtml(t.project||'—')}</td>
+        <td>${prioPill(t.priority)}</td>
+        <td>${statusPill(t.status)}</td>
+        <td>${dueCell(t.due,t.status)}</td>
+        <td><span class="tag">${escapeHtml(t.category)}</span></td>
+      </tr>`).join('');
+    return `<div class="grp">
+      <div class="grp-h">
+        <span class="gn">${escapeHtml(o)}</span>
+        <span class="gc">${m.assigned} assigned</span>
+        <span class="gc" style="color:var(--blue)">${prog} in progress</span>
+        <span class="gc" style="color:var(--green)">${m.completed} done</span>
+        ${m.waiting?`<span class="gc" style="color:var(--amber)">${m.waiting} waiting</span>`:''}
+        ${m.inReview?`<span class="gc" style="color:var(--gold)">${m.inReview} in review</span>`:''}
+        <div class="bar"><i style="width:${m.rate}%"></i></div>
+        <span class="gc">${m.rate}%</span>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Task</th><th>Type</th><th>Project</th><th>Priority</th><th>Status</th><th>Due</th><th>Category</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Milestone helpers ────────────────────────────────────────────────────────
+function getMilestone(intern, sectionKey, msName){
+  if(!milestoneData[intern]) return 'Not Started';
+  if(!milestoneData[intern][sectionKey]) return 'Not Started';
+  return milestoneData[intern][sectionKey][msName] || 'Not Started';
+}
+async function setMilestone(intern, sectionKey, msName, val){
+  if(!milestoneData[intern]) milestoneData[intern]={};
+  if(!milestoneData[intern][sectionKey]) milestoneData[intern][sectionKey]={};
+  milestoneData[intern][sectionKey][msName]=val;
+  await persist();
+  renderProgramme();
+}
+function internMilestonePct(intern){
+  let total=0, done=0;
+  PROG_SECTIONS.forEach(sec=>{
+    sec.milestones.forEach(ms=>{
+      total++;
+      if(getMilestone(intern,sec.key,ms)==='Approved') done++;
+    });
+  });
+  return total ? Math.round(done/total*100) : 0;
+}
+function sectionPct(intern, sec){
+  let done=0;
+  sec.milestones.forEach(ms=>{ if(getMilestone(intern,sec.key,ms)==='Approved') done++; });
+  return sec.milestones.length ? Math.round(done/sec.milestones.length*100) : 0;
+}
+function phasePct(intern, phase){
+  let total=0, done=0;
+  phase.keys.forEach(sk=>{
+    const sec=PROG_SECTIONS.find(s=>s.key===sk); if(!sec) return;
+    sec.milestones.forEach(ms=>{ total++; if(getMilestone(intern,sk,ms)==='Approved') done++; });
+  });
+  return total ? Math.round(done/total*100) : 0;
+}
+
+// ─── Render: Programme Tracker ────────────────────────────────────────────────
+function renderProgramme(){
+  const allInterns=OWNERS.length ? OWNERS : [];
+  if(!activeProgIntern || !allInterns.includes(activeProgIntern)){
+    activeProgIntern = allInterns[0] || null;
+  }
+  // intern tabs
+  document.getElementById('progInternTabs').innerHTML=
+    allInterns.map(o=>`<button class="intern-tab ${o===activeProgIntern?'on':''}" onclick="selectProgIntern('${escapeHtml(o)}')">${escapeHtml(o)}</button>`).join('');
+
+  if(!activeProgIntern){
+    document.getElementById('phaseTimeline').innerHTML='';
+    document.getElementById('programmeContent').innerHTML='<div class="empty">No interns found. Add an intern via Intern Directory in Sync &amp; Settings.</div>';
+    return;
+  }
+
+  // phase timeline
+  document.getElementById('phaseTimeline').innerHTML=PHASES.map(ph=>{
+    const pct=phasePct(activeProgIntern, ph);
+    return `<div class="phase-block">
+      <div class="ph-weeks">${ph.weeks}</div>
+      <div class="ph-name">${ph.label}</div>
+      <div class="ph-bar"><i style="width:${pct}%"></i></div>
+      <div class="ph-pct">${pct}% approved</div>
+    </div>`;
+  }).join('');
+
+  // overall
+  const overallPct=internMilestonePct(activeProgIntern);
+
+  // sections
+  document.getElementById('programmeContent').innerHTML=`
+    <div class="metrics" style="margin-bottom:20px">
+      <div class="metric accent"><div class="ml">Overall Programme</div><div class="mv">${overallPct}<span class="mvs">%</span></div></div>
+      ${PROG_SECTIONS.map(sec=>{
+        const pct=sectionPct(activeProgIntern,sec);
+        const cls=pct>=100?'good':pct>=50?'warn':'';
+        return `<div class="metric ${cls}"><div class="ml">${sec.label}</div><div class="mv">${pct}<span class="mvs">%</span></div></div>`;
+      }).join('')}
+    </div>
+    ${PROG_SECTIONS.map(sec=>{
+      const spct=sectionPct(activeProgIntern,sec);
+      return `<div class="prog-section">
+        <div class="prog-section-head">
+          <span class="psn">${sec.label}</span>
+          <div class="psbar"><i style="width:${spct}%"></i></div>
+          <span class="psc">${spct}% approved · ${sec.milestones.length} milestones</span>
+        </div>
+        <div class="prog-milestones">
+          ${sec.milestones.map(ms=>{
+            const st=getMilestone(activeProgIntern,sec.key,ms);
+            return `<div class="prog-milestone">
+              <div class="pm-name">${escapeHtml(ms)}</div>
+              <select class="${MS_CLASSES[st]}" onchange="setMilestone('${escapeHtml(activeProgIntern)}','${sec.key}','${escapeHtml(ms)}',this.value)" style="width:100%">
+                ${MS_STATUSES.map(s=>`<option value="${s}" ${s===st?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+function selectProgIntern(name){ activeProgIntern=name; renderProgramme(); }
+
+// ─── Review helpers ────────────────────────────────────────────────────────────
+function avgScore(rev){
+  const vals=Object.values(rev.scores||{});
+  if(!vals.length) return 0;
+  return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10;
+}
+
+// ─── Render: Weekly Review ────────────────────────────────────────────────────
+function renderWeekly(){
+  metricCards(metricsFor(tasks),'weekMetrics');
+
+  // ACTION REQUIRED — Waiting tasks grouped by Waiting On
+  const waiting=tasks.filter(t=>t.status==='Waiting');
+  const wg={};
+  waiting.forEach(t=>{ const k=(t.waitingon&&t.waitingon!=='None')?t.waitingon:'Other'; (wg[k]=wg[k]||[]).push(t); });
+  document.getElementById('weekWaiting').innerHTML = waiting.length ?
+    Object.keys(wg).sort().map(k=>`
+      <div style="margin-bottom:14px">
+        <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);margin-bottom:6px">${escapeHtml(k)} · ${wg[k].length}</div>
+        ${wg[k].map(t=>`
+          <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)">
+            <b>${escapeHtml(t.title)}</b>
+            <span class="meta"> — ${escapeHtml(ownerStr(t))}${t.project?' · '+escapeHtml(t.project):''}</span>
+            ${t.waitingdetails?`<div style="font-size:11.5px;color:var(--muted);padding-top:2px;font-style:italic">${escapeHtml(t.waitingdetails)}</div>`:''}
+            ${t.nextaction?`<div style="font-size:11.5px;color:var(--accent2);padding-top:1px">→ ${escapeHtml(t.nextaction)}</div>`:''}
+          </div>`).join('')}
+      </div>`).join('')
+    : '<div class="empty">Nothing waiting. All tasks are active or complete.</div>';
+
+  // In Review — tasks submitted by interns awaiting mentor sign-off
+  const inReview=tasks.filter(t=>t.status==='Review');
+  document.getElementById('weekReview').innerHTML = inReview.length ?
+    inReview.map(t=>`
+      <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)">
+        <b>${escapeHtml(t.title)}</b>
+        <span class="meta"> — ${escapeHtml(ownerStr(t))}${t.project?' · '+escapeHtml(t.project):''}</span>
+        ${t.nextaction?`<div style="font-size:11.5px;color:var(--accent2);padding-top:1px">→ ${escapeHtml(t.nextaction)}</div>`:''}
+      </div>`).join('')
+    : '<div class="empty">Nothing in review.</div>';
+
+  // Due this week
+  const due=tasks.filter(t=>t.status!=='Done'&&t.due&&daysUntil(t.due)!==null&&daysUntil(t.due)<=7)
+    .sort((a,b)=>(a.due||'').localeCompare(b.due));
+  document.getElementById('weekDue').innerHTML = due.length ? due.map(t=>{
+    const n=daysUntil(t.due);
+    const lbl=n<0?`${Math.abs(n)}d overdue`:n===0?'today':n===1?'tomorrow':`in ${n}d`;
+    return `<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px"><span><b>${escapeHtml(t.title)}</b> <span class="meta">${escapeHtml(ownerStr(t))}</span></span><span class="${n<0?'due-over':'due-soon'}" style="font-size:11.5px;white-space:nowrap">${lbl}</span></div>`;
+  }).join('') : '<div class="empty">Nothing due in the next 7 days.</div>';
+
+  // Done
+  const done=tasks.filter(t=>t.status==='Done').sort((a,b)=>(b.doneDate||'').localeCompare(a.doneDate||'')).slice(0,12);
+  document.getElementById('weekDone').innerHTML = done.length ? done.map(t=>`
+    <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)">✓ <b>${escapeHtml(t.title)}</b> <span class="meta">— ${escapeHtml(ownerStr(t))} · ${escapeHtml(t.project||'—')}${t.doneDate?' · '+fmtDate(t.doneDate):''}</span></div>`).join('')
+    : '<div class="empty">No completed tasks yet.</div>';
+
+  renderReviewForm();
+}
+
+function renderReviewForm(){
+  const allInterns=OWNERS.length ? OWNERS : [];
+  if(!activeReviewIntern || !allInterns.includes(activeReviewIntern)){
+    activeReviewIntern=allInterns[0]||null;
+  }
+  document.getElementById('reviewInternTabs').innerHTML=
+    allInterns.map(o=>`<button class="intern-tab ${o===activeReviewIntern?'on':''}" onclick="selectReviewIntern('${escapeHtml(o)}')">${escapeHtml(o)}</button>`).join('');
+
+  const rfd=document.getElementById('reviewForm');
+  if(!activeReviewIntern){ rfd.innerHTML='<div class="empty">No interns yet.</div>'; return; }
+
+  const internRevs=(reviews[activeReviewIntern]||[]).slice().reverse();
+  const weekLabel='W/E '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+  rfd.innerHTML=`
+    <div class="score-grid" id="scoreGrid_${escapeHtml(activeReviewIntern)}">
+      ${REVIEW_CRITERIA.map(c=>`
+        <div class="score-row">
+          <label>${escapeHtml(c)}</label>
+          <div class="score-wrap">
+            <input type="range" min="1" max="10" value="7" id="score_${escapeHtml(c)}" oninput="updateScoreVal('${escapeHtml(c)}')">
+            <span class="score-val" id="scoreval_${escapeHtml(c)}">7</span>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="fld" style="font-family:ui-sans-serif,system-ui,sans-serif;margin-top:10px">
+      <label>Mentor comment (optional)</label>
+      <textarea id="reviewComment" rows="2" placeholder="Any observations for this week…" style="resize:vertical"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn sm" onclick="saveReview('${escapeHtml(activeReviewIntern)}')">Save review for ${escapeHtml(activeReviewIntern)}</button>
+      <span class="hint">${weekLabel}</span>
+    </div>
+    ${internRevs.length ? `
+    <div class="review-history" style="margin-top:14px">
+      <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Review History</div>
+      ${internRevs.slice(0,6).map(rv=>`
+        <div class="rh-row">
+          <span style="font-weight:600">${escapeHtml(rv.weekLabel||rv.date)}</span>
+          <div class="rh-scores">${REVIEW_CRITERIA.map(c=>`<span class="rh-score">${c.slice(0,3)}: <b>${rv.scores[c]||'-'}</b></span>`).join('')}</div>
+          <span class="rh-total">Avg ${avgScore(rv)}/10</span>
+        </div>
+        ${rv.comment?`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);padding:2px 0 8px 0;font-style:italic">"${escapeHtml(rv.comment)}"</div>`:''}`).join('')}
+    </div>` : ''}`;
+}
+function updateScoreVal(c){
+  const inp=document.getElementById('score_'+c);
+  const val=document.getElementById('scoreval_'+c);
+  if(inp&&val) val.textContent=inp.value;
+}
+function selectReviewIntern(name){ activeReviewIntern=name; renderReviewForm(); }
+async function saveReview(intern){
+  const scores={};
+  REVIEW_CRITERIA.forEach(c=>{
+    const inp=document.getElementById('score_'+c); scores[c]=inp?parseInt(inp.value):7;
+  });
+  const comment=document.getElementById('reviewComment').value.trim();
+  const weekLabel='W/E '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  if(!reviews[intern]) reviews[intern]=[];
+  reviews[intern].push({ date:todayISO(), weekLabel, scores, comment });
+  await persist(); toast('Review saved for '+intern); renderReviewForm();
+}
+
+// ─── Render: Monthly Report ────────────────────────────────────────────────────
+function renderMonthly(){
+  const months=[...new Set(tasks.map(t=>(t.created||todayISO()).slice(0,7)).concat([todayISO().slice(0,7)]))].sort().reverse();
+  const sel=document.getElementById('monthSel'); const curMonth=sel.value||months[0];
+  sel.innerHTML=months.map(m=>{
+    const d=new Date(m+'-01T00:00:00');
+    return `<option value="${m}"${m===curMonth?' selected':''}>${d.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</option>`;
+  }).join('');
+
+  const allInterns=[...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))].sort();
+  const riSel=document.getElementById('reportInternSel');
+  const curIntern=riSel.value||allInterns[0]||'';
+  riSel.innerHTML='<option value="">All Interns</option>'+allInterns.map(o=>`<option value="${escapeHtml(o)}"${o===curIntern?' selected':''}>${escapeHtml(o)}</option>`).join('');
+
+  const month=sel.value||months[0];
+  const monthName=new Date(month+'-01T00:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const filterIntern=riSel.value;
+
+  let inPeriod=tasks.filter(t=>{
+    const c=(t.created||'').slice(0,7), d=(t.doneDate||'').slice(0,7);
+    return c===month||d===month||(t.status!=='Done');
+  });
+  if(filterIntern) inPeriod=inPeriod.filter(t=>ownerArr(t).includes(filterIntern));
+
+  const m=metricsFor(inPeriod);
+  const completedList=inPeriod.filter(t=>t.status==='Done');
+  const waitingList=inPeriod.filter(t=>t.status==='Waiting');
+  const wtEntries=Object.entries(m.wt).sort((a,b)=>b[1]-a[1]);
+  const topWaiting=wtEntries.length?wtEntries[0][0]:null;
+
+  // programme progress for selected intern
+  let progSection='';
+  if(filterIntern){
+    const overallPct=internMilestonePct(filterIntern);
+    progSection=`<h4>Programme Milestones</h4>
+      <div class="rgrid">
+        <div class="rstat"><div class="v" style="color:var(--accent2)">${overallPct}%</div><div class="l">Overall</div></div>
+        ${PROG_SECTIONS.map(sec=>{
+          const pct=sectionPct(filterIntern,sec);
+          return `<div class="rstat"><div class="v">${pct}%</div><div class="l">${sec.label}</div></div>`;
+        }).join('')}
+      </div>`;
+
+    // reviews for this intern
+    const internRevs=(reviews[filterIntern]||[]);
+    if(internRevs.length){
+      const latestRevs=internRevs.slice(-4).reverse();
+      const allAvgs=internRevs.map(rv=>avgScore(rv));
+      const overallAvg=allAvgs.length?Math.round(allAvgs.reduce((a,b)=>a+b,0)/allAvgs.length*10)/10:0;
+      const critAvgs=REVIEW_CRITERIA.map(c=>{
+        const vals=internRevs.map(rv=>rv.scores[c]||0).filter(v=>v>0);
+        return {c, avg: vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10:0};
+      });
+      progSection+=`<h4>Mentor Review Scores</h4>
+        <div class="rgrid">
+          <div class="rstat"><div class="v" style="color:var(--accent)">${overallAvg}</div><div class="l">Overall Avg /10</div></div>
+          ${critAvgs.map(({c,avg})=>`<div class="rstat"><div class="v">${avg}</div><div class="l">${c}</div></div>`).join('')}
+        </div>
+        <ul style="margin-top:12px">
+          ${latestRevs.map(rv=>{
+            const comments=rv.comment?` — "${escapeHtml(rv.comment)}"` :'';
+            return `<li><b>${escapeHtml(rv.weekLabel||rv.date)}</b>: avg ${avgScore(rv)}/10${comments}</li>`;
+          }).join('')}
+        </ul>`;
+    }
+  } else {
+    const internSummaries=allInterns.map(o=>{
+      const og=inPeriod.filter(t=>ownerArr(t).includes(o));
+      const om=metricsFor(og);
+      const pct=internMilestonePct(o);
+      const internRevs=reviews[o]||[];
+      const latestRev=internRevs.length?internRevs[internRevs.length-1]:null;
+      const latestAvg=latestRev?avgScore(latestRev):null;
+      return `<li><b>${escapeHtml(o)}</b> — ${om.completed}/${om.assigned} tasks (${om.rate}%) · ${pct}% milestones${latestAvg!==null?` · latest review avg ${latestAvg}/10`:''}${om.waiting?` · ${om.waiting} waiting`:''}</li>`;
+    }).join('');
+    progSection=`<h4>Intern Overview</h4><ul>${internSummaries||'<li>No interns recorded.</li>'}</ul>`;
+  }
+
+  // Top Waiting Reasons
+  const waitingReasonsHtml=wtEntries.length
+    ?`<h4>Top Waiting Reasons</h4><div class="rgrid">${wtEntries.map(([k,v])=>`<div class="rstat"><div class="v" style="color:var(--amber)">${v}</div><div class="l">${escapeHtml(k)}</div></div>`).join('')}</div>`
+    :'';
+
+  const narrative=`During ${monthName}${filterIntern?' for '+escapeHtml(filterIntern):''}, the team carried <b>${m.assigned}</b> active task${m.assigned!==1?'s':''}, completing <b>${m.completed}</b> for an overall completion rate of <b>${m.rate}%</b>. `+
+    (m.waiting?`${m.waiting} task${m.waiting!==1?'s were':' was'} waiting on external input${topWaiting?`, most often on <b>${escapeHtml(topWaiting)}</b>`:''}. `
+      :`No tasks were waiting on external input. `);
+
+  document.getElementById('reportOut').innerHTML=`
+  <div class="report">
+    <div class="rh"><div class="rt">WOA · Intern Tracker · Monthly Report</div>
+      <h2>${monthName}${filterIntern?' — '+escapeHtml(filterIntern):''}</h2>
+      <div class="rp">Generated ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></div>
+    <h4>Summary</h4>
+    <p class="lead">${narrative}</p>
+    <h4>Task Metrics</h4>
+    <div class="rgrid">
+      <div class="rstat"><div class="v">${m.assigned}</div><div class="l">Assigned</div></div>
+      <div class="rstat"><div class="v" style="color:var(--green)">${m.completed}</div><div class="l">Completed</div></div>
+      <div class="rstat"><div class="v" style="color:var(--amber)">${m.waiting}</div><div class="l">Waiting</div></div>
+      <div class="rstat"><div class="v" style="color:var(--gold)">${m.inReview}</div><div class="l">In Review</div></div>
+      <div class="rstat"><div class="v" style="color:var(--accent)">${m.rate}%</div><div class="l">Completion</div></div>
+    </div>
+    ${waitingReasonsHtml}
+    ${progSection}
+    <h4>Completed This Period</h4>
+    ${completedList.length?`<ul>${completedList.slice(0,15).map(t=>`<li>${escapeHtml(t.title)} <span style="color:var(--muted);font-size:12px">— ${escapeHtml(ownerStr(t))} · ${escapeHtml(t.project||'—')}</span></li>`).join('')}</ul>`:'<p class="lead">Nothing completed yet.</p>'}
+    <h4>Outstanding — Waiting on Input</h4>
+    ${waitingList.length?`<ul>${waitingList.map(t=>`<li>${escapeHtml(t.title)} <span style="color:var(--muted);font-size:12px">— ${escapeHtml(ownerStr(t))}${t.waitingon&&t.waitingon!=='None'?' · waiting on '+escapeHtml(t.waitingon):''}${t.waitingdetails?' — '+escapeHtml(t.waitingdetails):''}</span></li>`).join('')}</ul>`:'<p class="lead">No tasks waiting on input.</p>'}
+    <div class="rfoot">Auto-generated from ${tasks.length} live task records. No data re-entered.</div>
+  </div>`;
+}
+
+// ─── Render: Intern Portal ────────────────────────────────────────────────────
+let activePortalIntern = null;
+
+function renderPortal(){
+  const allInterns = INTERNS.filter(i=>i.status==='Active');
+  if(!activePortalIntern || !allInterns.find(i=>i.id===activePortalIntern)){
+    activePortalIntern = allInterns[0]?.id || null;
+  }
+  // tabs
+  document.getElementById('portalInternTabs').innerHTML =
+    allInterns.map(i=>`<button class="intern-tab ${i.id===activePortalIntern?'on':''}" onclick="selectPortalIntern('${i.id}')">${escapeHtml(internDisplayName(i))}</button>`).join('');
+
+  const out = document.getElementById('portalContent');
+  if(!activePortalIntern){ out.innerHTML='<div class="empty">No active interns. Add one via Intern Directory in Sync &amp; Settings.</div>'; return; }
+
+  const intern = INTERNS.find(i=>i.id===activePortalIntern);
+  if(!intern){ out.innerHTML='<div class="empty">Intern not found.</div>'; return; }
+  const dn = internDisplayName(intern);
+
+  // Task metrics for this intern
+  const myTasks = tasks.filter(t=>(t.owners||[]).includes(dn)||t.owner===dn);
+  const m = metricsFor(myTasks);
+  const progPct = internMilestonePct(dn);
+
+  // Learning log entries
+  const ll = (learningLog[intern.id]||[]).slice().reverse();
+
+  // Review history
+  const myRevs = (reviews[dn]||[]).slice().reverse();
+
+  // Open tasks
+  const openTasks = sortList(myTasks.filter(t=>t.status!=='Done'));
+  const doneTasks = sortList(myTasks.filter(t=>t.status==='Done')).reverse().slice(0,10);
+
+  out.innerHTML=`
+  <!-- Profile -->
+  <div class="card" style="margin-bottom:18px">
+    <h3>${escapeHtml(dn)}</h3>
+    <div class="ch-sub">${intern.mentor?`Mentor: ${escapeHtml(intern.mentor)}`:'No mentor assigned'}${intern.joiningDate?` · Joined ${fmtDate(intern.joiningDate)}`:''}</div>
+    <div class="metrics" style="margin:14px 0 0">
+      <div class="metric"><div class="ml">Tasks Assigned</div><div class="mv">${m.assigned}</div></div>
+      <div class="metric good"><div class="ml">Completed</div><div class="mv">${m.completed}</div></div>
+      <div class="metric ${m.waiting?'warn':''}"><div class="ml">Waiting</div><div class="mv">${m.waiting}</div></div>
+      <div class="metric accent"><div class="ml">Programme</div><div class="mv">${progPct}<span class="mvs">%</span></div></div>
+    </div>
+  </div>
+
+  <div class="twocol" style="margin-bottom:18px">
+    <!-- My Tasks -->
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <h3>My Tasks</h3>
+        <div class="ch-sub">${openTasks.length} open task${openTasks.length!==1?'s':''}</div>
+        ${openTasks.length?`
+        <div class="tbl-wrap" style="margin-top:10px">
+          <table>
+            <thead><tr><th>Task</th><th>Type</th><th>Project</th><th>Priority</th><th>Status</th><th>Due</th></tr></thead>
+            <tbody>${openTasks.map(t=>`
+              <tr>
+                <td>
+                  <div class="tt">${escapeHtml(t.title)}</div>
+                  ${t.status==='Waiting'&&t.waitingdetails?`<div class="blockwhy" style="color:var(--amber)">⏳ ${escapeHtml(t.waitingdetails)}</div>`:''}
+                  ${t.nextaction?`<div class="meta" style="margin-top:2px">→ ${escapeHtml(t.nextaction)}</div>`:''}
+                </td>
+                <td>${ttTag(t.tasktype)}</td>
+                <td class="meta">${escapeHtml(t.project||'—')}</td>
+                <td>${prioPill(t.priority)}</td>
+                <td>${statusPill(t.status)}</td>
+                <td>${dueCell(t.due,t.status)}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`:'<div class="empty" style="padding:20px">No open tasks.</div>'}
+        ${doneTasks.length?`
+        <div style="margin-top:12px;font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Recently Completed</div>
+        ${doneTasks.map(t=>`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line);color:var(--muted)">✓ ${escapeHtml(t.title)}</div>`).join('')}`:''}
+      </div>
+
+      <!-- Programme Progress -->
+      <div class="card">
+        <h3>Programme Progress</h3>
+        <div class="ch-sub">${progPct}% approved across all sections</div>
+        <div style="margin-top:12px">
+          ${PHASES.map(ph=>{
+            const pct=phasePct(dn, ph);
+            return `<div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:600">${ph.label}</span>
+                <span style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted)">${pct}%</span>
+              </div>
+              <div class="bar" style="max-width:100%"><i style="width:${pct}%"></i></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Learning Log -->
+      <div class="card" style="margin-bottom:14px">
+        <h3>Learning Log</h3>
+        <div class="ch-sub">Personal journal — reflections, lessons, observations.</div>
+        <div style="margin-top:10px">
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:8px">
+            <div class="fld"><label>Date</label><input id="llDate" type="date" value="${todayISO()}"></div>
+            <div class="fld"><label>Title</label><input id="llTitle" placeholder="e.g. Site visit takeaways"></div>
+          </div>
+          <div class="fld"><label>Notes</label>
+            <textarea id="llNotes" rows="3" placeholder="What did you learn or observe today?" style="resize:vertical"></textarea>
+          </div>
+          <div class="actions" style="margin-top:8px">
+            <button class="btn sm" onclick="addLearningEntry('${intern.id}')">Add Entry</button>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          ${ll.length?ll.slice(0,8).map(e=>`
+            <div style="padding:10px 0;border-bottom:1px dashed var(--line)">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
+                <span style="font-weight:700;font-size:13.5px">${escapeHtml(e.title)}</span>
+                <span style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted)">${fmtDate(e.date)}</span>
+              </div>
+              <p style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--muted);margin:0;line-height:1.55">${escapeHtml(e.notes)}</p>
+              <button class="btn ghost sm" style="margin-top:5px;font-size:11px;padding:3px 9px" onclick="deleteLearningEntry('${intern.id}','${e.id}')">Remove</button>
+            </div>`).join(''):'<div class="empty" style="padding:20px">No entries yet. Add your first reflection above.</div>'}
+        </div>
+      </div>
+
+      <!-- Weekly Feedback -->
+      <div class="card">
+        <h3>Weekly Feedback</h3>
+        <div class="ch-sub">Mentor review scores — most recent first.</div>
+        <div class="review-history" style="margin-top:10px">
+          ${myRevs.length?myRevs.slice(0,6).map(rv=>`
+            <div class="rh-row">
+              <span style="font-weight:600">${escapeHtml(rv.weekLabel||rv.date)}</span>
+              <div class="rh-scores">${REVIEW_CRITERIA.map(c=>`<span class="rh-score">${c.slice(0,3)}: <b>${rv.scores[c]||'—'}</b></span>`).join('')}</div>
+              <span class="rh-total">Avg ${avgScore(rv)}/10</span>
+            </div>
+            ${rv.comment?`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);padding:2px 0 8px;font-style:italic">"${escapeHtml(rv.comment)}"</div>`:''}`).join('')
+            :'<div class="empty" style="padding:20px">No reviews yet.</div>'}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function selectPortalIntern(id){ activePortalIntern=id; renderPortal(); }
+
+async function addLearningEntry(internId){
+  const date=document.getElementById('llDate').value||todayISO();
+  const title=(document.getElementById('llTitle').value||'').trim();
+  const notes=(document.getElementById('llNotes').value||'').trim();
+  if(!title){ toast('Title is required'); return; }
+  if(!learningLog[internId]) learningLog[internId]=[];
+  learningLog[internId].push({id:uid(), date, title, notes});
+  await persist();
+  document.getElementById('llTitle').value='';
+  document.getElementById('llNotes').value='';
+  renderPortal();
+  toast('Entry added');
+}
+
+async function deleteLearningEntry(internId, entryId){
+  if(!learningLog[internId]) return;
+  learningLog[internId]=learningLog[internId].filter(e=>e.id!==entryId);
+  await persist(); renderPortal(); toast('Entry removed');
+}
+function render(){
+  refreshLists(); refreshMentorSelect();
+  renderEntry(); renderProject(); renderIntern();
+  renderProgramme(); renderWeekly(); renderMonthly();
+  renderPortal(); renderInternDirectory();
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+document.getElementById('tabs').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  const v=e.target.dataset.v;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b===e.target));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+// ─── Clock ────────────────────────────────────────────────────────────────────
+function tickClock(){
+  document.getElementById('clock').innerHTML=
+    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+
+    '<br><b>'+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})+'</b>';
+}
+
+// ─── Sample data ──────────────────────────────────────────────────────────────
+async function loadSample(){
+  const t=todayISO();
+  const d=n=>{ const dt=new Date(); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10); };
+  const dn='EN038 · Ananya';
+  const mk=o=>{ const r=Object.assign({id:uid(),tasktype:'Studio Assignment',project:'',owner:dn,owners:[dn],assignedby:'Abhishek Raja',priority:'Medium',status:'To Do',due:'',category:'General',waitingon:'None',waitingdetails:'',nextaction:'',created:t,doneDate:''},o);
+    if(!r.owners.length) r.owners=[dn]; r.owner=r.owners.join(', '); return r; };
+  tasks=[
+    mk({title:'Schematic design package',project:'Hillcrest Residence',priority:'High',status:'In Progress',due:d(4),category:'Drawings',nextaction:'Complete ground floor plan first.'}),
+    mk({title:'Material study board',priority:'Low',status:'Waiting',due:d(7),category:'Research',tasktype:'Programme Assignment',waitingon:'Material Sample',waitingdetails:'Waiting for tile samples from Kajaria.',nextaction:'Follow up with supplier on Friday.'}),
+    mk({title:'Site documentation report',project:'Hillcrest Residence',priority:'High',status:'Done',due:d(-3),category:'Reports',doneDate:d(-2),tasktype:'Programme Assignment'}),
+    mk({title:'Project pitch preparation',project:'Harbour Office',priority:'High',status:'Review',due:d(5),category:'Presentation',tasktype:'Programme Assignment',nextaction:'Awaiting mentor sign-off.'}),
+    mk({title:'3D render set',project:'Hillcrest Residence',priority:'High',status:'Waiting',due:d(6),category:'Visualization',waitingon:'Client Feedback',waitingdetails:'Waiting for client approval of layout before rendering.',nextaction:'Resend mood board for confirmation.'}),
+    mk({title:'Anthropometry study',priority:'Medium',status:'Done',due:d(-1),doneDate:t,category:'Research',tasktype:'Programme Assignment'}),
+  ];
+  milestoneData={
+    [dn]:{ foundations:{'Daily Presentations':'Approved','Material Study':'In Progress','Anthropometry Study':'Approved','Website Development':'Not Started'},
+           practical:{'Site Documentation':'Submitted','Analysis Reports':'Not Started','Sketch Submission':'Not Started','POV Video':'Not Started'} }
+  };
+  reviews={
+    [dn]:[{date:d(-7),weekLabel:'W/E '+new Date(new Date().setDate(new Date().getDate()-7)).toLocaleDateString('en-US',{month:'short',day:'numeric'}),scores:{Initiative:8,Communication:7,['Technical Skill']:7,Curiosity:9,Ownership:7,Professionalism:8},comment:'Good initiative on design work. Strong curiosity.'}]
+  };
+  await saveLists(); await persist(); render(); toast('Sample data loaded');
+}
+async function wipeAll(){
+  if(!confirm('Delete all tasks and data? This cannot be undone.')) return;
+  tasks=[]; milestoneData={}; reviews={}; learningLog={};
+  INTERNS=[{id:'intern_en038', code:'EN038', name:'Ananya', joiningDate:'', mentor:'', status:'Active'}];
+  await persist(); await saveLists(); render(); toast('All data cleared');
+}
+
+// ─── Intern Directory ─────────────────────────────────────────────────────────
+function renderInternDirectory(){
+  const el=document.getElementById('internDirectory'); if(!el) return;
+  el.innerHTML=`
+    <div style="margin-bottom:10px">
+      <button class="btn sm" onclick="openInternForm()">+ Add Intern</button>
+    </div>
+    ${INTERNS.length?`
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Code</th><th>Name</th><th>Display</th><th>Joining Date</th>
+          <th>Mentor</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody>${INTERNS.map(i=>`
+          <tr>
+            <td><span class="tag">${escapeHtml(i.code)}</span></td>
+            <td class="tt">${escapeHtml(i.name)}</td>
+            <td class="meta">${escapeHtml(internDisplayName(i))}</td>
+            <td class="meta">${i.joiningDate?fmtDate(i.joiningDate):'—'}</td>
+            <td class="meta">${escapeHtml(i.mentor||'—')}</td>
+            <td><span class="pill dot ${i.status==='Active'?'st-prog':'st-done'}">${escapeHtml(i.status)}</span></td>
+            <td><div class="row-act">
+              <button class="icbtn" title="Edit" onclick="openInternForm('${i.id}')">✎</button>
+              <button class="icbtn del" title="Delete" onclick="confirmDeleteIntern('${i.id}')">×</button>
+            </div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`:'<div class="empty">No interns in directory.</div>'}
+    <div id="internFormArea" style="margin-top:16px"></div>`;
+}
+
+function openInternForm(id){
+  const existing=id?INTERNS.find(i=>i.id===id):null;
+  const fArea=document.getElementById('internFormArea'); if(!fArea) return;
+  fArea.innerHTML=`
+    <div class="card">
+      <h3>${existing?'Edit Intern':'Add Intern'}</h3>
+      <div class="form-grid">
+        <div class="fld"><label>Employee / Intern Code</label>
+          <input id="iFcode" placeholder="e.g. EN038" value="${escapeHtml(existing?.code||'')}" style="text-transform:uppercase">
+        </div>
+        <div class="fld"><label>Name</label>
+          <input id="iFname" placeholder="Full name" value="${escapeHtml(existing?.name||'')}">
+        </div>
+        <div class="fld"><label>Joining Date</label>
+          <input id="iFdate" type="date" value="${escapeHtml(existing?.joiningDate||'')}">
+        </div>
+        <div class="fld"><label>Mentor</label>
+          <select id="iFmentor">
+            <option value="">— none —</option>
+            ${MENTORS.map(m=>`<option value="${escapeHtml(m)}"${(existing?.mentor||'')===m?' selected':''}>${escapeHtml(m)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fld"><label>Status</label>
+          <select id="iFstatus">
+            <option value="Active"${(!existing||existing.status==='Active')?' selected':''}>Active</option>
+            <option value="Completed"${existing?.status==='Completed'?' selected':''}>Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="saveInternForm('${id||''}')">Save Intern</button>
+        <button class="btn ghost" onclick="document.getElementById('internFormArea').innerHTML=''">Cancel</button>
+      </div>
+    </div>`;
+  fArea.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function saveInternForm(id){
+  const code=(document.getElementById('iFcode').value||'').trim().toUpperCase();
+  const name=(document.getElementById('iFname').value||'').trim();
+  if(!code||!name){ toast('Code and Name are required'); return; }
+  // Check for duplicate code
+  const dup=INTERNS.find(i=>i.code===code&&i.id!==id);
+  if(dup){ toast(`Code ${code} already used by ${dup.name}`); return; }
+  const rec={
+    id: id||'intern_'+uid(),
+    code,
+    name,
+    joiningDate: document.getElementById('iFdate').value||'',
+    mentor: document.getElementById('iFmentor').value||'',
+    status: document.getElementById('iFstatus').value||'Active',
+  };
+  if(id){
+    const old=INTERNS.find(i=>i.id===id);
+    const oldDN=old?internDisplayName(old):'';
+    INTERNS=INTERNS.map(i=>i.id===id?rec:i);
+    // Rename keys in milestoneData, reviews, learningLog if display name changed
+    const newDN=internDisplayName(rec);
+    if(oldDN && oldDN!==newDN){
+      if(milestoneData[oldDN]){ milestoneData[newDN]=milestoneData[oldDN]; delete milestoneData[oldDN]; }
+      if(reviews[oldDN]){ reviews[newDN]=reviews[oldDN]; delete reviews[oldDN]; }
+      // Update task ownership
+      tasks=tasks.map(t=>({
+        ...t,
+        owners: (t.owners||[]).map(o=>o===oldDN?newDN:o),
+        owner: (t.owners||[]).map(o=>o===oldDN?newDN:o).join(', ')||t.owner
+      }));
+    }
+  } else {
+    INTERNS.push(rec);
+    // Auto-generate empty milestone and review scaffolding
+    const dn=internDisplayName(rec);
+    if(!milestoneData[dn]) milestoneData[dn]={};
+    if(!reviews[dn]) reviews[dn]=[];
+    if(!learningLog[rec.id]) learningLog[rec.id]=[];
+  }
+  await saveLists(); await persist(); renderInternDirectory(); refreshLists();
+  document.getElementById('internFormArea').innerHTML='';
+  toast(id?'Intern updated':'Intern added');
+}
+
+async function confirmDeleteIntern(id){
+  const intern=INTERNS.find(i=>i.id===id); if(!intern) return;
+  const dn=internDisplayName(intern);
+  // Custom confirm dialog using a simple overlay card
+  const fArea=document.getElementById('internFormArea');
+  fArea.innerHTML=`
+    <div class="card" style="border-color:var(--red)">
+      <h3>Delete Intern?</h3>
+      <p style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;margin:8px 0 14px">
+        You are about to delete <b>${escapeHtml(dn)}</b>. Choose how to handle their tasks:
+      </p>
+      <div class="actions">
+        <button class="btn" style="background:var(--red);border-color:var(--red)" onclick="deleteIntern('${id}',false)">Delete Intern Only</button>
+        <button class="btn" style="background:var(--red);border-color:var(--red);opacity:.75" onclick="deleteIntern('${id}',true)">Delete Intern &amp; All Tasks</button>
+        <button class="btn ghost" onclick="document.getElementById('internFormArea').innerHTML=''">Cancel</button>
+      </div>
+      <p class="hint" style="margin-top:8px">
+        <b>Delete Intern Only</b>: removes intern, keeps tasks (marked Unassigned).<br>
+        <b>Delete Intern &amp; All Tasks</b>: removes intern, all their tasks, milestone and review data.
+      </p>
+    </div>`;
+  fArea.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function deleteIntern(id, withTasks){
+  const intern=INTERNS.find(i=>i.id===id); if(!intern) return;
+  const dn=internDisplayName(intern);
+  if(withTasks){
+    // Remove all tasks owned by this intern
+    tasks=tasks.filter(t=>!(t.owners||[]).includes(dn)&&t.owner!==dn);
+    // Remove programme, review, learning log data
+    delete milestoneData[dn];
+    delete reviews[dn];
+    delete learningLog[id];
+  } else {
+    // Keep tasks, mark as Unassigned
+    tasks=tasks.map(t=>{
+      const owners=(t.owners||[]).filter(o=>o!==dn);
+      return { ...t, owners, owner: owners.length?owners.join(', '):'Unassigned' };
+    });
+  }
+  INTERNS=INTERNS.filter(i=>i.id!==id);
+  selectedOwners.delete(dn);
+  await saveLists(); await persist(); renderInternDirectory(); refreshLists();
+  document.getElementById('internFormArea').innerHTML='';
+  render();
+  toast(withTasks?`${dn} and all tasks deleted`:`${dn} removed — tasks kept as Unassigned`);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(async function(){
+  tickClock(); setInterval(tickClock,30000);
+  await load();
+  const hashMatch=location.hash.match(/[#&]db=([^&]+)/);
+  if(hashMatch){
+    const urlFromHash=decodeURIComponent(hashMatch[1]);
+    if(urlFromHash&&urlFromHash!==dbUrl){ dbUrl=urlFromHash; await lsSet(DBKEY,dbUrl); autoSync=true; await lsSet('woa:autosync:v1','1'); }
+    history.replaceState(null,'',location.pathname+location.search);
+  }
+  const dbInput=document.getElementById('dbUrl'); if(dbInput) dbInput.value=dbUrl;
+  document.getElementById('autoSync').checked=autoSync;
+  const shareBtn=document.getElementById('shareLinkBtn'); if(shareBtn) shareBtn.style.display=dbUrl?'':'none';
+  const pullBtnEl=document.getElementById('pullBtn'); if(pullBtnEl) pullBtnEl.style.display=dbUrl?'':'none';
+  if(dbUrl){ setSyncState('Connecting…'); await pullNow(); if(autoSync) startPolling(); }
+  else render();
+})();
+</script>
+</body>
+</html>
