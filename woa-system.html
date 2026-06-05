@@ -629,7 +629,7 @@ function renderOwnerWidget(){
      </span>`
   ).join('');
 
-  const allOwners = [...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))].sort();
+  const ownerSet=[...new Set(OWNERS)].sort();
   const available = allOwners.filter(o => !selectedOwners.has(o));
   dropEl.innerHTML = '<option value="">— add assignee —</option>' +
     available.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
@@ -773,7 +773,7 @@ function populateSelect(id, items, current, allowBlank){
 function refreshLists(){
   const projSet=[...new Set(PROJECTS.concat(tasks.filter(t=>t.project).map(t=>t.project)))];
   const cats=[...new Set(tasks.map(t=>t.category))].sort();
-  const ownerSet=[...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))].sort();
+  const allOwners = [...new Set(OWNERS)].sort();
 
   populateSelect('f_project', projSet, document.getElementById('f_project').value || '', true);
   renderOwnerWidget();
