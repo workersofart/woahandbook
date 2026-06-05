@@ -989,23 +989,29 @@ function renderProject(){
 }
 
 function renderArchitect(){
-  const owners=[...new Set(tasks.flatMap(ownerArr))].sort();
+  // Split combined owner strings (e.g. "Alex, Abhishek") into individual names
+  // so each architect gets their own section
+  function splitIndividuals(t){
+    return ownerArr(t).flatMap(o=>o.split(', ').map(n=>n.trim())).filter(Boolean);
+  }
+  const owners=[...new Set(tasks.flatMap(splitIndividuals))].sort();
   const out=document.getElementById('architectGroups');
-  if(!owners.length){ out.innerHTML='<div class="empty">No tasks yet.</div>'; return; }
+  if(!owners.length){ out.innerHTML='<div class=\'empty\'>No tasks yet.</div>'; return; }
   out.innerHTML=owners.map(o=>{
-    const g=tasks.filter(t=>ownerArr(t).includes(o)); const m=metricsFor(g);
+    // Include task if this individual's name appears anywhere in the owner string
+    const g=tasks.filter(t=>splitIndividuals(t).includes(o)); const m=metricsFor(g);
     const rows=sortList(g).map(t=>`
-      <tr><td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
-      <td>${t.type==='leadership'?`<span class="tag">${escapeHtml(cap(t.domain))}</span>`:escapeHtml(t.project||'—')}</td>
+      <tr><td><div class='tt'>${escapeHtml(t.title)}</div>${t.blocker?`<div class='blockwhy'>⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
+      <td>${t.type==='leadership'?`<span class='tag'>${escapeHtml(cap(t.domain))}</span>`:escapeHtml(t.project||'—')}</td>
       <td>${prioPill(t.priority)}</td><td>${statusPill(t.status)}</td>
-      <td>${dueCell(t.due,t.status)}</td><td><span class="tag">${escapeHtml(t.category)}</span></td></tr>`).join('');
-    return `<div class="grp">
-      <div class="grp-h"><span class="gn">${escapeHtml(o)}</span>
-        <span class="gc">${m.assigned} assigned</span>
-        <span class="gc" style="color:var(--green)">${m.completed} done</span>
-        ${m.blocked?`<span class="gc" style="color:var(--red)">${m.blocked} blocked</span>`:''}
-        <div class="bar"><i style="width:${m.rate}%"></i></div><span class="gc">${m.rate}%</span></div>
-      <div class="tbl-wrap"><table><thead><tr><th>Task</th><th>Project / Domain</th><th>Priority</th><th>Status</th><th>Due</th><th>Category</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <td>${dueCell(t.due,t.status)}</td><td><span class='tag'>${escapeHtml(t.category)}</span></td></tr>`).join('');
+    return `<div class='grp'>
+      <div class='grp-h'><span class='gn'>${escapeHtml(o)}</span>
+        <span class='gc'>${m.assigned} assigned</span>
+        <span class='gc' style='color:var(--green)'>${m.completed} done</span>
+        ${m.blocked?`<span class='gc' style='color:var(--red)'>${m.blocked} blocked</span>`:''}
+        <div class='bar'><i style='width:${m.rate}%'></i></div><span class='gc'>${m.rate}%</span></div>
+      <div class='tbl-wrap'><table><thead><tr><th>Task</th><th>Project / Domain</th><th>Priority</th><th>Status</th><th>Due</th><th>Category</th></tr></thead><tbody>${rows}</tbody></table></div>
     </div>`;
   }).join('');
 }
