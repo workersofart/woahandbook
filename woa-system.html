@@ -1164,26 +1164,24 @@ async function wipeAll(){
   mondayNote();
   document.getElementById('f_due').value='';
   await load();
-  // Check URL hash for embedded sync URL shared via link (e.g. #sync=https://...)
-  const hashMatch=location.hash.match(/[#&]sync=([^&]+)/);
+  // Check URL hash for embedded Firebase database URL (e.g. #db=https://...)
+  const hashMatch=location.hash.match(/[#&]db=([^&]+)/);
   if(hashMatch){
     const urlFromHash=decodeURIComponent(hashMatch[1]);
-    if(urlFromHash && urlFromHash!==syncUrl){
-      syncUrl=urlFromHash; await lsSet(URLKEY,syncUrl);
-      autoSync=true; await lsSet(AUTOKEY,'1');
+    if(urlFromHash && urlFromHash!==dbUrl){
+      dbUrl=urlFromHash; await lsSet(DBKEY,dbUrl);
+      autoSync=true; await lsSet('woa:autosync:v1','1');
     }
     history.replaceState(null,'',location.pathname+location.search);
   }
   // restore sync UI
-  document.getElementById('syncUrl').value=syncUrl;
+  const dbInput=document.getElementById('dbUrl'); if(dbInput) dbInput.value=dbUrl;
   document.getElementById('autoSync').checked=autoSync;
-  const shareBtnEl=document.getElementById('shareLinkBtn');
-  if(shareBtnEl) shareBtnEl.style.display=syncUrl?'':'none';
-  if(syncUrl){
-    // Always pull on page load when a sheet is connected — ensures any device gets shared data
-    setSyncState('Connected — pulling latest data…');
+  const shareBtn=document.getElementById('shareLinkBtn'); if(shareBtn) shareBtn.style.display=dbUrl?'':'none';
+  const pullBtnEl=document.getElementById('pullBtn'); if(pullBtnEl) pullBtnEl.style.display=dbUrl?'':'none';
+  if(dbUrl){
+    setSyncState('Connecting — loading latest data…');
     await pullNow();
-    // Start background polling so changes from other devices appear automatically
     if(autoSync) startPolling();
   } else {
     render();
