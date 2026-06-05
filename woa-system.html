@@ -46,7 +46,6 @@
   .card h3{font-size:16px;font-weight:700;margin-bottom:3px}
   .card .ch-sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);margin-bottom:14px}
 
-  /* form */
   .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;
     font-family:ui-sans-serif,system-ui,sans-serif}
   .fld{display:flex;flex-direction:column;gap:4px}
@@ -66,7 +65,6 @@
   button.btn.sm{padding:5px 11px;font-size:12px}
   .hint{font-size:12px;color:var(--muted)}
 
-  /* metric cards */
   .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:11px;margin-bottom:18px}
   .metric{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--shadow)}
   .metric .ml{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10.5px;letter-spacing:.09em;
@@ -78,7 +76,6 @@
   .metric.warn .mv{color:var(--amber)}
   .metric.bad .mv{color:var(--red)}
 
-  /* table */
   .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow)}
   table{width:100%;border-collapse:collapse;font-family:ui-sans-serif,system-ui,sans-serif;font-size:12.8px}
   thead th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
@@ -125,7 +122,6 @@
 
   .empty{text-align:center;padding:40px 20px;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px}
 
-  /* groups */
   .grp{margin-bottom:20px}
   .grp-h{display:flex;align-items:center;gap:10px;margin:0 0 9px;padding-bottom:6px;border-bottom:1px solid var(--line)}
   .grp-h .gn{font-size:15px;font-weight:700}
@@ -134,7 +130,6 @@
   .bar{height:6px;border-radius:4px;background:rgba(120,110,90,.16);overflow:hidden;flex:1;max-width:160px}
   .bar > i{display:block;height:100%;background:var(--accent2);border-radius:4px}
 
-  /* leadership domains */
   .dom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
   .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
   .pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px}
@@ -163,7 +158,6 @@
   .dom .dpct{font-family:ui-sans-serif,system-ui,sans-serif;font-size:18px;font-weight:800}
   .dom .dl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;margin-top:7px}
 
-  /* report */
   .report{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:34px 40px;box-shadow:var(--shadow);max-width:840px;margin:0 auto}
   .report .rh{text-align:center;border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:24px}
   .report .rh .rt{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif}
@@ -195,6 +189,47 @@
   .seedbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;font-family:ui-sans-serif,system-ui,sans-serif}
   .blockwhy{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--red);margin-top:2px}
   .legend{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+
+  /* ---- multi-assignee widget ---- */
+  .owner-widget{
+    border:1px solid var(--line);border-radius:7px;background:var(--paper);
+    padding:6px 8px;display:flex;flex-direction:column;gap:6px;transition:.15s;
+  }
+  .owner-widget:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(181,73,31,.13)}
+  .owner-tags{display:flex;flex-wrap:wrap;gap:5px;min-height:24px}
+  .owner-tag{
+    display:inline-flex;align-items:center;gap:4px;
+    font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:600;
+    background:var(--ink);color:var(--paper);
+    padding:3px 8px 3px 10px;border-radius:20px;line-height:1;
+  }
+  .owner-tag button{
+    background:none;border:none;color:inherit;cursor:pointer;padding:0;
+    font-size:13px;line-height:1;opacity:.7;font-family:ui-sans-serif,system-ui,sans-serif;
+    width:14px;height:14px;display:flex;align-items:center;justify-content:center;border-radius:50%;
+    transition:.12s;
+  }
+  .owner-tag button:hover{opacity:1;background:rgba(255,255,255,.2)}
+  .owner-row{display:flex;gap:6px;align-items:center}
+  .owner-row select{
+    flex:1;font-size:12.5px;padding:5px 8px;border:1px solid var(--line);
+    border-radius:6px;background:var(--paper);color:var(--ink);
+  }
+  .owner-row button.add-owner-btn{
+    font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;
+    border:1px solid var(--line);background:var(--paper);color:var(--muted);
+    border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap;transition:.13s;
+  }
+  .owner-row button.add-owner-btn:hover{color:var(--ink);border-color:var(--muted)}
+  .owner-manage{display:flex;gap:6px;flex-wrap:wrap;padding-top:4px;border-top:1px dashed var(--line)}
+  .owner-manage button{
+    font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:600;
+    border:1px dashed var(--line);background:none;color:var(--muted);
+    border-radius:20px;padding:2px 10px;cursor:pointer;transition:.13s;
+  }
+  .owner-manage button:hover{color:var(--ink);border-color:var(--ink)}
+  .owner-manage button.del-owner{color:var(--red);border-color:rgba(163,45,45,.3)}
+  .owner-manage button.del-owner:hover{background:rgba(163,45,45,.08);border-color:var(--red)}
 </style>
 </head>
 <body>
@@ -244,9 +279,23 @@
             <option>strategy</option><option>office development</option><option>design direction</option>
           </select>
         </div>
-        <div class="fld span2"><label>Assigned To</label>
-          <select id="ownerChips" onchange="selectOwnerDrop(this.value)"></select>
+
+        <!-- ===== MULTI-ASSIGNEE WIDGET ===== -->
+        <div class="fld span2">
+          <label>Assigned To</label>
+          <div class="owner-widget" id="ownerWidget">
+            <div class="owner-tags" id="ownerTags"></div>
+            <div class="owner-row">
+              <select id="ownerPickDrop" onchange="pickOwnerFromDrop()">
+                <option value="">— add assignee —</option>
+              </select>
+              <button class="add-owner-btn" onclick="addOwnerChip()">+ New person</button>
+            </div>
+            <div class="owner-manage" id="ownerManage"></div>
+          </div>
         </div>
+        <!-- ===================================== -->
+
         <div class="fld"><label>Priority</label>
           <select id="f_priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
         </div>
@@ -336,7 +385,7 @@
         <a class="btn ghost" id="waOpen" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Open in WhatsApp</a>
         <label class="hint" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="digOpenOnly" onchange="buildDigest()" style="width:auto;margin:0">Open tasks only</label>
       </div>
-      <div class="legend">Tip: “Open in WhatsApp” lets you pick the group, then long-press to paste. The Copy button is the reliable path.</div>
+      <div class="legend">Tip: "Open in WhatsApp" lets you pick the group, then long-press to paste. The Copy button is the reliable path.</div>
       <pre id="digestBox" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.55;white-space:pre-wrap;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 15px;margin-top:13px;max-height:340px;overflow:auto;color:var(--ink)"></pre>
     </div>
 
@@ -410,12 +459,10 @@ let workType='project';
 let sortKey='due', sortDir=1;
 let dbUrl='', autoSync=false, syncing=false, pollTimer=null;
 
-/* ---------- predefined dropdown lists (editable, persisted) ---------- */
 const OWNERKEY='woa:owners:v1', PROJKEY='woa:projects:v1';
 let OWNERS=['Abhishek Raja','Abhi','Subin','Alex'];
 let PROJECTS=['058_JewelOne Flagship','029_HBTS','042_FA Kannur','047_School'];
 
-/* ---------- local storage: window.storage (Claude viewer) OR localStorage (downloaded file) ---------- */
 function hasWS(){ try{ return typeof window.storage!=='undefined' && window.storage; }catch(e){ return false; } }
 async function lsGet(k){
   if(hasWS()){ try{ const r=await window.storage.get(k); return r&&r.value?r.value:null; }catch(e){} }
@@ -441,8 +488,6 @@ async function persist(){
   if(autoSync && dbUrl && !syncing) pushNow();
 }
 
-/* ---------- Firebase Realtime Database sync ---------- */
-const DBKEY_SAVED='woa:dburl:v1';
 function setSyncState(msg,ok){
   const el=document.getElementById('syncState'); if(!el) return;
   el.textContent=msg; el.style.color=ok===true?'var(--green)':ok===false?'var(--red)':'var(--muted)';
@@ -519,7 +564,6 @@ function copyShareLink(){
     .catch(()=>prompt('Copy this link:',link));
 }
 
-/* ---------- helpers ---------- */
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const todayISO=()=>new Date().toISOString().slice(0,10);
 function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00');
@@ -548,7 +592,6 @@ function depName(id){ const t=tasks.find(x=>x.id===id); return t?t.title:''; }
 function groupLabel(t){ return t.type==='leadership' ? cap(t.domain) : (t.project||'(unassigned)'); }
 function cap(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
 
-/* ---------- work type toggle ---------- */
 function setWorkType(t){
   workType=t;
   document.getElementById('typeProject').classList.toggle('on',t==='project');
@@ -561,19 +604,91 @@ function toggleBlocker(){
   document.getElementById('wrap_blocker').style.display = s==='Blocked'?'flex':'none';
 }
 
-/* ---------- save / edit / delete ---------- */
+/* =====================================================================
+   MULTI-ASSIGNEE WIDGET
+   ===================================================================== */
+let selectedOwners = new Set();
+
+function ownerArr(t){
+  if(Array.isArray(t.owners) && t.owners.length) return t.owners.filter(Boolean);
+  if(t.owner && t.owner !== 'Unassigned') return t.owner.split(',').map(s=>s.trim()).filter(Boolean);
+  return [];
+}
+function ownerStr(t){ const a=ownerArr(t); return a.length ? a.join(', ') : 'Unassigned'; }
+
+function renderOwnerWidget(){
+  const tagsEl = document.getElementById('ownerTags');
+  const dropEl  = document.getElementById('ownerPickDrop');
+  const manageEl= document.getElementById('ownerManage');
+  if(!tagsEl||!dropEl||!manageEl) return;
+
+  tagsEl.innerHTML = [...selectedOwners].map(name =>
+    `<span class="owner-tag">
+       ${escapeHtml(name)}
+       <button title="Remove" onclick="removeOwnerTag('${escapeHtml(name)}')">×</button>
+     </span>`
+  ).join('');
+
+  const allOwners = [...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))].sort();
+  const available = allOwners.filter(o => !selectedOwners.has(o));
+  dropEl.innerHTML = '<option value="">— add assignee —</option>' +
+    available.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+
+  manageEl.innerHTML = OWNERS.map(o =>
+    `<button class="del-owner" title="Remove '${escapeHtml(o)}' from team list" onclick="deleteOwnerFromList('${escapeHtml(o)}')">
+       ✕ ${escapeHtml(o)}
+     </button>`
+  ).join('');
+}
+
+function pickOwnerFromDrop(){
+  const drop = document.getElementById('ownerPickDrop');
+  const val  = drop.value;
+  if(!val) return;
+  selectedOwners.add(val);
+  drop.value = '';
+  renderOwnerWidget();
+}
+
+function removeOwnerTag(name){
+  selectedOwners.delete(name);
+  renderOwnerWidget();
+}
+
+async function addOwnerChip(){
+  const name = (prompt('New team member name:')||'').trim();
+  if(!name) return;
+  if(!OWNERS.includes(name)) OWNERS.push(name);
+  await saveLists();
+  selectedOwners.add(name);
+  renderOwnerWidget();
+  refreshLists();
+}
+
+async function deleteOwnerFromList(name){
+  if(!confirm(`Remove "${name}" from the team list?\n(Existing tasks won't be changed.)`)) return;
+  OWNERS = OWNERS.filter(o => o !== name);
+  selectedOwners.delete(name);
+  await saveLists();
+  renderOwnerWidget();
+  refreshLists();
+  toast(`${name} removed from team list`);
+}
+/* ===================================================================== */
+
 async function saveTask(){
   const title=document.getElementById('f_title').value.trim();
   if(!title){ toast('Task name required'); return; }
   const status=document.getElementById('f_status').value;
+  const ownersArr = [...selectedOwners];
   const rec={
     id: editId||uid(),
     type: workType,
     title,
     project: workType==='project'?document.getElementById('f_project').value.trim():'',
     domain: workType==='leadership'?document.getElementById('f_domain').value:'',
-    owners: [...selectedOwners],
-    owner: [...selectedOwners].join(', ')||'Unassigned',
+    owners: ownersArr,
+    owner: ownersArr.join(', ')||'Unassigned',
     priority: document.getElementById('f_priority').value,
     status,
     due: document.getElementById('f_due').value,
@@ -587,13 +702,14 @@ async function saveTask(){
   else { tasks.push(rec); toast('Task added'); }
   await persist(); resetForm(); render();
 }
+
 function editTask(id){
   const t=tasks.find(x=>x.id===id); if(!t) return;
   editId=id; setWorkType(t.type);
   document.getElementById('f_title').value=t.title;
   document.getElementById('f_project').value=t.project||'';
   if(t.domain) document.getElementById('f_domain').value=t.domain;
-  selectedOwners=new Set(ownerArr(t));
+  selectedOwners = new Set(ownerArr(t));
   document.getElementById('f_priority').value=t.priority;
   document.getElementById('f_status').value=t.status;
   document.getElementById('f_due').value=t.due;
@@ -609,6 +725,7 @@ function editTask(id){
   document.getElementById('editHint').textContent='Editing existing task';
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
 async function delTask(id){
   tasks=tasks.filter(t=>t.id!==id);
   tasks.forEach(t=>{ if(t.dep===id) t.dep=''; });
@@ -622,7 +739,7 @@ async function quickDone(id){
 function resetForm(){
   editId=null;
   ['f_title','f_due','f_category'].forEach(i=>document.getElementById(i).value='');
-  selectedOwners=new Set();
+  selectedOwners = new Set();
   document.getElementById('f_project').value='';
   document.getElementById('f_priority').value='Medium';
   document.getElementById('f_status').value='To Do';
@@ -640,7 +757,6 @@ function refreshDepOptions(exclude){
   sel.value=cur;
 }
 
-/* ---------- dropdowns & filters ---------- */
 function populateSelect(id, items, current, allowBlank){
   const el=document.getElementById(id); if(!el) return;
   const opts=[];
@@ -649,55 +765,18 @@ function populateSelect(id, items, current, allowBlank){
   opts.push('<option value="__add__">+ Add new…</option>');
   el.innerHTML=opts.join('');
   if(current && !items.includes(current)){
-    // value not in list (e.g. legacy data): inject it so it still shows
     const o=document.createElement('option'); o.value=current; o.textContent=current; o.selected=true;
     el.insertBefore(o, el.firstChild);
   } else if(current){ el.value=current; }
 }
-let selectedOwners=new Set();
-function ownerArr(t){
-  if(Array.isArray(t.owners)) return t.owners.filter(Boolean);
-  if(t.owner) return [t.owner];   // legacy single-string support
-  return [];
-}
-function ownerStr(t){ const a=ownerArr(t); return a.length?a.join(', '):'Unassigned'; }
-
-function renderOwnerChips(){
-  const box=document.getElementById('ownerChips'); if(!box) return;
-  const set=[...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))].sort();
-  const cur=[...selectedOwners][0]||'';
-  box.innerHTML='<option value="">— select —</option>'+set.map(o=>`<option value="${escapeHtml(o)}"${o===cur?' selected':''}>&#x25CF; ${escapeHtml(o)}</option>`).join('');
-  box.innerHTML+=`<option value="__add__">+ Add new…</option>`;
-}
-function selectOwnerDrop(val){
-  if(val==='__add__'){
-    addOwnerChip();
-    return;
-  }
-  selectedOwners=new Set(val?[val]:[]);
-  renderOwnerChips();
-}
-function toggleOwner(name){
-  if(selectedOwners.has(name)) selectedOwners.delete(name); else selectedOwners.add(name);
-  renderOwnerChips();
-}
-async function addOwnerChip(){
-  const name=(prompt('Add a new team member:')||'').trim();
-  if(!name) return;
-  if(!OWNERS.includes(name)) OWNERS.push(name);
-  await saveLists();
-  selectedOwners=new Set([name]);
-  renderOwnerChips();
-}
 
 function refreshLists(){
-  // merge predefined with any values already used in tasks
   const projSet=[...new Set(PROJECTS.concat(tasks.filter(t=>t.project).map(t=>t.project)))];
   const cats=[...new Set(tasks.map(t=>t.category))].sort();
   const ownerSet=[...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))].sort();
 
   populateSelect('f_project', projSet, document.getElementById('f_project').value || '', true);
-  renderOwnerChips();
+  renderOwnerWidget();
 
   document.getElementById('catList').innerHTML=cats.map(c=>`<option value="${escapeHtml(c)}">`).join('');
   const fo=document.getElementById('fOwner'); const cur=fo.value;
@@ -705,6 +784,7 @@ function refreshLists(){
   fo.value=cur;
   refreshDepOptions(editId);
 }
+
 async function handleAddNew(sel, kind){
   if(sel.value!=='__add__') return;
   const name = (prompt('Add a new project:')||'').trim();
@@ -715,22 +795,18 @@ async function handleAddNew(sel, kind){
   sel.value=name;
 }
 
-/* ---------- metrics engine ---------- */
 function metricsFor(list){
   const assigned=list.length;
   const completed=list.filter(t=>t.status==='Done').length;
   const blocked=list.filter(t=>t.status==='Blocked').length;
   const rate=assigned?Math.round(completed/assigned*100):0;
-  // blocker-adjusted: exclude blocked tasks from the denominator
   const adjDen=assigned-blocked;
   const adjRate=adjDen>0?Math.round(completed/adjDen*100):0;
-  // blocker type breakdown
   const bt={};
   list.filter(t=>t.status==='Blocked').forEach(t=>{ bt[t.blocker||'Other']=(bt[t.blocker||'Other']||0)+1; });
   return {assigned,completed,blocked,rate,adjRate,bt};
 }
 
-/* ---------- sorting ---------- */
 function setSort(k){ if(sortKey===k) sortDir*=-1; else {sortKey=k;sortDir=1;} render(); }
 function sortList(list){
   const prioRank={High:0,Medium:1,Low:2};
@@ -746,7 +822,6 @@ function sortList(list){
   });
 }
 
-/* ---------- renderers ---------- */
 function render(){
   refreshLists();
   renderEntry(); renderProject(); renderArchitect();
@@ -772,7 +847,7 @@ function renderEntry(){
     <tr>
       <td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
       <td>${t.type==='leadership'?`<span class="tag">${escapeHtml(cap(t.domain))}</span>`:escapeHtml(t.project||'—')}</td>
-      <td>${escapeHtml(t.owner)}</td>
+      <td>${escapeHtml(ownerStr(t))}</td>
       <td>${prioPill(t.priority)}</td>
       <td>${statusPill(t.status)}</td>
       <td>${dueCell(t.due,t.status)}</td>
@@ -807,7 +882,7 @@ function renderProject(){
     const g=groups[k]; const m=metricsFor(g);
     const rows=sortList(g).map(t=>`
       <tr><td><div class="tt">${escapeHtml(t.title)}</div>${t.blocker?`<div class="blockwhy">⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
-      <td>${escapeHtml(t.owner)}</td><td>${prioPill(t.priority)}</td><td>${statusPill(t.status)}</td>
+      <td>${escapeHtml(ownerStr(t))}</td><td>${prioPill(t.priority)}</td><td>${statusPill(t.status)}</td>
       <td>${dueCell(t.due,t.status)}</td><td><span class="tag">${escapeHtml(t.category)}</span></td>
       <td class="meta">${t.dep?escapeHtml(depName(t.dep)):'—'}</td></tr>`).join('');
     return `<div class="grp">
@@ -821,8 +896,6 @@ function renderProject(){
 }
 
 function renderArchitect(){
-  // Split combined owner strings (e.g. "Alex, Abhishek") into individual names
-  // so each architect gets their own section
   function splitIndividuals(t){
     return ownerArr(t).flatMap(o=>o.split(', ').map(n=>n.trim())).filter(Boolean);
   }
@@ -830,7 +903,6 @@ function renderArchitect(){
   const out=document.getElementById('architectGroups');
   if(!owners.length){ out.innerHTML='<div class=\'empty\'>No tasks yet.</div>'; return; }
   out.innerHTML=owners.map(o=>{
-    // Include task if this individual's name appears anywhere in the owner string
     const g=tasks.filter(t=>splitIndividuals(t).includes(o)); const m=metricsFor(g);
     const rows=sortList(g).map(t=>`
       <tr><td><div class='tt'>${escapeHtml(t.title)}</div>${t.blocker?`<div class='blockwhy'>⚑ ${escapeHtml(t.blocker)}</div>`:''}</td>
@@ -849,7 +921,6 @@ function renderArchitect(){
 }
 
 function donutSVG(done,prog,block,todo,total){
-  // segments in order: done(green), in progress(blue), blocked(red), todo(grey)
   const segs=[
     {n:done, c:'var(--green)'},
     {n:prog, c:'var(--blue)'},
@@ -876,16 +947,13 @@ function donutSVG(done,prog,block,todo,total){
 }
 
 function renderLeadership(){
-  // NOTE: id kept as v-leadership for routing; this is now the Project Dashboard.
   const proj=tasks.filter(t=>t.type==='project');
   metricCards(metricsFor(proj),'projDashMetrics');
-
   const groups={};
   proj.forEach(t=>{ const k=t.project||'(unassigned)'; (groups[k]=groups[k]||[]).push(t); });
   const keys=Object.keys(groups).sort();
   const grid=document.getElementById('projDashGrid');
   if(!keys.length){ grid.innerHTML='<div class="empty">No project tasks yet. Add some on the Task Entry tab.</div>'; return; }
-
   grid.innerHTML=keys.map(k=>{
     const g=groups[k];
     const done=g.filter(t=>t.status==='Done').length;
@@ -898,7 +966,6 @@ function renderLeadership(){
     const pctBg=rate>=66?'rgba(59,109,17,.16)':rate>=33?'rgba(154,106,12,.15)':'rgba(120,110,90,.14)';
     const owners=[...new Set(g.flatMap(ownerArr))];
     const overdue=g.filter(t=>t.status!=='Done'&&t.due&&daysUntil(t.due)<0).length;
-
     const bdRow=(label,n,color)=>`
       <div class="bd-row">
         <span class="bd-dot" style="background:${color}"></span>
@@ -906,7 +973,6 @@ function renderLeadership(){
         <span class="bd-track"><i style="width:${total?Math.round(n/total*100):0}%;background:${color}"></i></span>
         <span class="bd-n">${n}</span>
       </div>`;
-
     return `<div class="pcard">
       <div class="pc-h">
         <div><div class="pc-name">${escapeHtml(k)}</div>
@@ -943,7 +1009,6 @@ function renderWeekly(){
     <div class="metric accent"><div class="ml">Completion Rate</div><div class="mv">${m.rate}<span class="mvs">%</span></div></div>
     <div class="metric warn"><div class="ml">Blocker-Adjusted Rate</div><div class="mv">${m.adjRate}<span class="mvs">%</span></div></div>`;
 
-  // blocked grouped by type
   const blocked=tasks.filter(t=>t.status==='Blocked');
   const bt={};
   blocked.forEach(t=>{ (bt[t.blocker||'Other']=bt[t.blocker||'Other']||[]).push(t); });
@@ -951,26 +1016,24 @@ function renderWeekly(){
   wb.innerHTML = blocked.length ? Object.keys(bt).sort().map(k=>`
     <div style="margin-bottom:12px">
       <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--red);margin-bottom:5px">${escapeHtml(k)} · ${bt[k].length}</div>
-      ${bt[k].map(t=>`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)"><b>${escapeHtml(t.title)}</b> <span class="meta">— ${escapeHtml(t.owner)} · ${escapeHtml(groupLabel(t))}</span></div>`).join('')}
+      ${bt[k].map(t=>`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)"><b>${escapeHtml(t.title)}</b> <span class="meta">— ${escapeHtml(ownerStr(t))} · ${escapeHtml(groupLabel(t))}</span></div>`).join('')}
     </div>`).join('') : '<div class="empty">Nothing blocked. </div>';
 
-  // due this week
   const due=tasks.filter(t=>t.status!=='Done'&&t.due&&daysUntil(t.due)!==null&&daysUntil(t.due)<=7).sort((a,b)=>(a.due||'').localeCompare(b.due));
   document.getElementById('weekDue').innerHTML = due.length ? due.map(t=>{
     const n=daysUntil(t.due);
     const lbl=n<0?`${Math.abs(n)}d overdue`:n===0?'today':n===1?'tomorrow':`in ${n}d`;
-    return `<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px"><span><b>${escapeHtml(t.title)}</b> <span class="meta">${escapeHtml(t.owner)}</span></span><span class="${n<0?'due-over':'due-soon'}" style="font-size:11.5px;white-space:nowrap">${lbl}</span></div>`;
+    return `<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px"><span><b>${escapeHtml(t.title)}</b> <span class="meta">${escapeHtml(ownerStr(t))}</span></span><span class="${n<0?'due-over':'due-soon'}" style="font-size:11.5px;white-space:nowrap">${lbl}</span></div>`;
   }).join('') : '<div class="empty">Nothing due in the next 7 days.</div>';
 
   const done=tasks.filter(t=>t.status==='Done').sort((a,b)=>(b.doneDate||'').localeCompare(a.doneDate||'')).slice(0,12);
   document.getElementById('weekDone').innerHTML = done.length ? done.map(t=>`
-    <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)">✓ <b>${escapeHtml(t.title)}</b> <span class="meta">— ${escapeHtml(t.owner)} · ${escapeHtml(groupLabel(t))}${t.doneDate?' · '+fmtDate(t.doneDate):''}</span></div>`).join('')
+    <div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)">✓ <b>${escapeHtml(t.title)}</b> <span class="meta">— ${escapeHtml(ownerStr(t))} · ${escapeHtml(groupLabel(t))}${t.doneDate?' · '+fmtDate(t.doneDate):''}</span></div>`).join('')
     : '<div class="empty">No completed tasks yet.</div>';
 
   buildDigest();
 }
 
-/* ---------- WhatsApp digest ---------- */
 function digestText(){
   const openOnly=document.getElementById('digOpenOnly') && document.getElementById('digOpenOnly').checked;
   let list=openOnly ? tasks.filter(t=>t.status!=='Done') : tasks.slice();
@@ -998,7 +1061,7 @@ function digestText(){
       out+=line+'\n';
     });
   });
-  out+='\n_Auto-generated from WOA — reply here if anything’s blocked._';
+  out+='\n_Auto-generated from WOA — reply here if anything\'s blocked._';
   return out;
 }
 function buildDigest(){
@@ -1021,7 +1084,6 @@ async function copyDigest(){
 }
 
 function renderMonthly(){
-  // month selector from data
   const months=[...new Set(tasks.map(t=>(t.created||todayISO()).slice(0,7)).concat([todayISO().slice(0,7)]))].sort().reverse();
   const sel=document.getElementById('monthSel'); const cur=sel.value||months[0];
   sel.innerHTML=months.map(m=>{
@@ -1030,8 +1092,6 @@ function renderMonthly(){
   }).join('');
   const month=sel.value||months[0];
   const monthName=new Date(month+'-01T00:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
-
-  // tasks relevant to the period: created in month OR completed in month OR still open
   const inPeriod=tasks.filter(t=>{
     const c=(t.created||'').slice(0,7), d=(t.doneDate||'').slice(0,7);
     return c===month || d===month || (t.status!=='Done');
@@ -1039,36 +1099,25 @@ function renderMonthly(){
   const m=metricsFor(inPeriod);
   const proj=metricsFor(inPeriod.filter(t=>t.type==='project'));
   const lead=metricsFor(inPeriod.filter(t=>t.type==='leadership'));
-
-  // top blocker
   const btEntries=Object.entries(m.bt).sort((a,b)=>b[1]-a[1]);
   const topBlocker=btEntries.length?btEntries[0][0]:null;
-
-  // owner leaderboard
   const owners=[...new Set(inPeriod.flatMap(ownerArr))].map(o=>{
     const om=metricsFor(inPeriod.filter(t=>ownerArr(t).includes(o))); return {o,...om};
   }).sort((a,b)=>b.completed-a.completed);
-
-  // domain progress
   const domains=['business growth','content','hiring','strategy','office development','design direction'];
-
   const completedList=inPeriod.filter(t=>t.status==='Done');
   const blockedList=inPeriod.filter(t=>t.status==='Blocked');
-
   const narrative=`During ${monthName}, the team carried <b>${m.assigned}</b> active task${m.assigned!==1?'s':''} across projects and leadership work, completing <b>${m.completed}</b> for an overall completion rate of <b>${m.rate}%</b>. `+
     (m.blocked? `${m.blocked} task${m.blocked!==1?'s were':' was'} blocked${topBlocker?`, most often on <b>${escapeHtml(topBlocker.toLowerCase())}</b>`:''}; with those excluded, the blocker-adjusted completion rate was <b>${m.adjRate}%</b>. `
       : `No tasks were blocked this period, so the blocker-adjusted rate matches the raw rate at <b>${m.adjRate}%</b>. `)+
     `Project work ran at ${proj.rate}% completion and leadership work at ${lead.rate}%.`;
-
   document.getElementById('reportOut').innerHTML=`
   <div class="report">
     <div class="rh"><div class="rt">WOA · Monthly Performance Report</div>
       <h2>${monthName}</h2>
       <div class="rp">Generated ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · Projects · People · Performance</div></div>
-
     <h4>Executive Summary</h4>
     <p class="lead">${narrative}</p>
-
     <h4>Key Metrics</h4>
     <div class="rgrid">
       <div class="rstat"><div class="v">${m.assigned}</div><div class="l">Assigned</div></div>
@@ -1077,34 +1126,26 @@ function renderMonthly(){
       <div class="rstat"><div class="v" style="color:var(--accent)">${m.rate}%</div><div class="l">Completion</div></div>
       <div class="rstat"><div class="v" style="color:var(--gold)">${m.adjRate}%</div><div class="l">Blocker-Adjusted</div></div>
     </div>
-
     <h4>Project vs Leadership</h4>
     <div class="rgrid">
       <div class="rstat"><div class="v">${proj.completed}/${proj.assigned}</div><div class="l">Project · ${proj.rate}%</div></div>
       <div class="rstat"><div class="v">${lead.completed}/${lead.assigned}</div><div class="l">Leadership · ${lead.rate}%</div></div>
     </div>
-
     <h4>Leadership Domains</h4>
     <ul>${domains.map(d=>{ const g=inPeriod.filter(t=>t.type==='leadership'&&t.domain===d); const dm=metricsFor(g);
       return `<li>${cap(d)} — ${g.length?`${dm.completed}/${dm.assigned} complete (${dm.rate}%)`:'no activity'}</li>`; }).join('')}</ul>
-
     <h4>Assignee Performance</h4>
     <ul>${owners.length?owners.map(o=>`<li><b>${escapeHtml(o.o)}</b> — ${o.completed}/${o.assigned} completed (${o.rate}%)${o.blocked?` · ${o.blocked} blocked`:''}</li>`).join(''):'<li>No owners recorded.</li>'}</ul>
-
     <h4>Blocker Analysis</h4>
     ${btEntries.length?`<ul>${btEntries.map(([k,v])=>`<li>${escapeHtml(k)} — ${v} task${v!==1?'s':''} held up</li>`).join('')}</ul>`:'<p class="lead">No blockers recorded this period.</p>'}
-
     <h4>Completed This Period</h4>
-    ${completedList.length?`<ul>${completedList.slice(0,15).map(t=>`<li>${escapeHtml(t.title)} <span style="color:var(--muted);font-size:12px">— ${escapeHtml(t.owner)} · ${escapeHtml(groupLabel(t))}</span></li>`).join('')}</ul>`:'<p class="lead">Nothing completed yet.</p>'}
-
+    ${completedList.length?`<ul>${completedList.slice(0,15).map(t=>`<li>${escapeHtml(t.title)} <span style="color:var(--muted);font-size:12px">— ${escapeHtml(ownerStr(t))} · ${escapeHtml(groupLabel(t))}</span></li>`).join('')}</ul>`:'<p class="lead">Nothing completed yet.</p>'}
     <h4>Outstanding Risks</h4>
-    ${blockedList.length?`<ul>${blockedList.map(t=>`<li>${escapeHtml(t.title)} <span style="color:var(--muted);font-size:12px">— ${escapeHtml(t.owner)} · blocked on ${escapeHtml(t.blocker||'unspecified')}</span></li>`).join('')}</ul>`:'<p class="lead">No outstanding blockers.</p>'}
-
+    ${blockedList.length?`<ul>${blockedList.map(t=>`<li>${escapeHtml(t.title)} <span style="color:var(--muted);font-size:12px">— ${escapeHtml(ownerStr(t))} · blocked on ${escapeHtml(t.blocker||'unspecified')}</span></li>`).join('')}</ul>`:'<p class="lead">No outstanding blockers.</p>'}
     <div class="rfoot">This report was generated automatically from ${tasks.length} live task records. No data was re-entered or manually compiled.</div>
   </div>`;
 }
 
-/* ---------- monday note ---------- */
 function mondayNote(){
   const d=new Date(); const day=d.getDay();
   const el=document.getElementById('mondayNote');
@@ -1112,7 +1153,6 @@ function mondayNote(){
   else { const til=(8-day)%7||7; el.innerHTML=`Monday planning hub. Next Monday is in ${til} day${til!==1?'s':''}. Tasks entered here power every view and the monthly report — enter once, never recompile.`; }
 }
 
-/* ---------- tabs ---------- */
 document.getElementById('tabs').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON') return;
   const v=e.target.dataset.v;
@@ -1121,18 +1161,18 @@ document.getElementById('tabs').addEventListener('click',e=>{
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
-/* ---------- clock ---------- */
 function tickClock(){
   document.getElementById('clock').innerHTML=
     new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+
     '<br><b>'+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})+'</b>';
 }
 
-/* ---------- sample + wipe ---------- */
 async function loadSample(){
-  const t=todayISO(); const d=n=>{const x=new Date();x-=0;const dt=new Date();dt.setDate(dt.getDate()+n);return dt.toISOString().slice(0,10);};
-  const mk=(o)=>{ const r=Object.assign({id:uid(),type:'project',project:'',domain:'',owner:'Unassigned',priority:'Medium',status:'To Do',due:'',category:'General',dep:'',blocker:'',created:t,doneDate:''},o);
-    r.owners=r.owner.split(',').map(s=>s.trim()).filter(Boolean); return r; };
+  const t=todayISO();
+  const d=n=>{const dt=new Date();dt.setDate(dt.getDate()+n);return dt.toISOString().slice(0,10);};
+  const mk=(o)=>{ const r=Object.assign({id:uid(),type:'project',project:'',domain:'',owner:'Unassigned',owners:[],priority:'Medium',status:'To Do',due:'',category:'General',dep:'',blocker:'',created:t,doneDate:''},o);
+    if(!r.owners.length) r.owners=r.owner.split(',').map(s=>s.trim()).filter(Boolean);
+    return r; };
   tasks=[
     mk({title:'Schematic design package',project:'Riverside Villa',owner:'Priya',priority:'High',status:'In Progress',due:d(4),category:'Drawings'}),
     mk({title:'Structural consultant coordination',project:'Riverside Villa',owner:'Abhishek Raja, Abhi',priority:'High',status:'Blocked',due:d(2),category:'Coordination',blocker:'Vendor / Consultant'}),
@@ -1158,13 +1198,11 @@ async function wipeAll(){
   tasks=[]; await persist(); render(); toast('All tasks cleared');
 }
 
-/* ---------- boot ---------- */
 (async function(){
   tickClock(); setInterval(tickClock,30000);
   mondayNote();
   document.getElementById('f_due').value='';
   await load();
-  // Check URL hash for embedded Firebase database URL (e.g. #db=https://...)
   const hashMatch=location.hash.match(/[#&]db=([^&]+)/);
   if(hashMatch){
     const urlFromHash=decodeURIComponent(hashMatch[1]);
@@ -1174,7 +1212,6 @@ async function wipeAll(){
     }
     history.replaceState(null,'',location.pathname+location.search);
   }
-  // restore sync UI
   const dbInput=document.getElementById('dbUrl'); if(dbInput) dbInput.value=dbUrl;
   document.getElementById('autoSync').checked=autoSync;
   const shareBtn=document.getElementById('shareLinkBtn'); if(shareBtn) shareBtn.style.display=dbUrl?'':'none';
