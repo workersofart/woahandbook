@@ -244,8 +244,8 @@
             <option>strategy</option><option>office development</option><option>design direction</option>
           </select>
         </div>
-        <div class="fld span2"><label>Assigned To <span style="text-transform:none;letter-spacing:0;font-weight:400">(tap to select one or more)</span></label>
-          <div id="ownerChips" class="chips"></div>
+        <div class="fld span2"><label>Assigned To</label>
+          <select id="ownerChips" onchange="selectOwnerDrop(this.value)"></select>
         </div>
         <div class="fld"><label>Priority</label>
           <select id="f_priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
@@ -821,10 +821,18 @@ function ownerStr(t){ const a=ownerArr(t); return a.length?a.join(', '):'Unassig
 
 function renderOwnerChips(){
   const box=document.getElementById('ownerChips'); if(!box) return;
-  const set=[...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))];
-  box.innerHTML = set.map(o=>
-    `<span class="chip${selectedOwners.has(o)?' on':''}" onclick="toggleOwner('${o.replace(/'/g,"\\'")}')">${escapeHtml(o)}</span>`
-  ).join('') + `<span class="chip add" onclick="addOwnerChip()">+ Add</span>`;
+  const set=[...new Set(OWNERS.concat(tasks.flatMap(ownerArr)))].sort();
+  const cur=[...selectedOwners][0]||'';
+  box.innerHTML='<option value="">— select —</option>'+set.map(o=>`<option value="${escapeHtml(o)}"${o===cur?' selected':''}>&#x25CF; ${escapeHtml(o)}</option>`).join('');
+  box.innerHTML+=`<option value="__add__">+ Add new…</option>`;
+}
+function selectOwnerDrop(val){
+  if(val==='__add__'){
+    addOwnerChip();
+    return;
+  }
+  selectedOwners=new Set(val?[val]:[]);
+  renderOwnerChips();
 }
 function toggleOwner(name){
   if(selectedOwners.has(name)) selectedOwners.delete(name); else selectedOwners.add(name);
@@ -835,7 +843,7 @@ async function addOwnerChip(){
   if(!name) return;
   if(!OWNERS.includes(name)) OWNERS.push(name);
   await saveLists();
-  selectedOwners.add(name);
+  selectedOwners=new Set([name]);
   renderOwnerChips();
 }
 
