@@ -379,7 +379,7 @@
         <span class="hint" id="syncState">Not connected — data is stored only in this browser.</span>
       </div>
       <div class="legend" id="syncMeta"></div>
-      <label class="hint" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-top:10px"><input type="checkbox" id="autoSync" onchange="toggleAuto()" style="width:auto;margin:0">Auto-sync: pull on open, push on every change</label>
+      <label class="hint" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-top:10px"><input type="checkbox" id="autoSync" onchange="toggleAuto()" style="width:auto;margin:0">Auto-sync: push every change, auto-refresh every 15 s <span id="liveIndicator" style="display:none;background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;letter-spacing:.05em">● LIVE</span></label>
     </div>
 
     <div class="card">
@@ -415,7 +415,7 @@ let tasks=[];
 let editId=null;
 let workType='project';
 let sortKey='due', sortDir=1;
-let syncUrl='', autoSync=false, syncing=false;
+let syncUrl='', autoSync=false, syncing=false, pollTimer=null;
 
 /* ---------- predefined dropdown lists (editable, persisted) ---------- */
 const OWNERKEY='woa:owners:v1', PROJKEY='woa:projects:v1';
@@ -498,36 +498,55 @@ async function pushNow(silent){
   }catch(e){ setSyncState('Push failed — network error. Check your connection.',false); }
   syncing=false;
 }
-async function pullNow(){
-  if(!syncUrl){ toast('Connect a Google Sheet first'); return; }
-  syncing=true; setSyncState('Pulling…');
+async function pullNow(silent){
+  if(!syncUrl){ if(!silent) toast('Connect a Google Sheet first'); return; }
+  if(syncing) return; // don't overlap
+  syncing=true; if(!silent) setSyncState('Pulling…');
   try{
-    // GET as plain text then parse — avoids strict JSON content-type / CORS issues.
     const r=await fetch(syncUrl+'?action=load&t='+Date.now());
     const txt=await r.text();
     let data; try{ data=JSON.parse(txt); }catch(_){ throw new Error('non-json'); }
     if(Array.isArray(data.tasks)){
-      // Don't let an empty remote silently wipe local work.
       if(data.tasks.length===0 && tasks.length>0){
-        setSyncState('Sheet is empty but this device has '+tasks.length+' tasks. Use Push to upload them.',false);
+        if(!silent){
+          setSyncState('Sheet is empty but this device has '+tasks.length+' tasks. Use Push to upload them.',false);
+        }
         syncing=false; return;
       }
-      tasks=data.tasks;
-      await lsSet(KEY,JSON.stringify(tasks));
-      render();
+      // Only update & re-render if data actually changed (avoids disrupting user on poll)
+      const incoming=JSON.stringify(data.tasks);
+      const current=JSON.stringify(tasks);
+      if(incoming!==current){
+        tasks=data.tasks;
+        await lsSet(KEY,JSON.stringify(tasks));
+        render();
+      }
       const now=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-      setSyncState('Synced ✓ pulled at '+now,true);
+      setSyncState('Synced ✓ '+(silent?'auto-':'')+'pulled at '+now,true);
       document.getElementById('syncMeta').textContent=tasks.length+' tasks loaded from the shared sheet.';
-    } else { setSyncState('Connected, but sheet returned no task list.',false); }
+    } else { if(!silent) setSyncState('Connected, but sheet returned no task list.',false); }
   }catch(e){
-    setSyncState('Pull failed — if the URL works in a browser tab, redeploy the script (see fix below).',false);
+    if(!silent) setSyncState('Pull failed — if the URL works in a browser tab, redeploy the script (see fix below).',false);
   }
   syncing=false;
 }
+
 async function toggleAuto(){
   autoSync=document.getElementById('autoSync').checked;
   await lsSet(AUTOKEY, autoSync?'1':'0');
-  if(autoSync && syncUrl) pushNow(true);
+  if(autoSync && syncUrl){ pushNow(true); startPolling(); }
+  else { stopPolling(); }
+}
+function startPolling(){
+  stopPolling();
+  if(!syncUrl || !autoSync) return;
+  // Poll every 15 seconds — pick up changes made by other team members
+  pollTimer=setInterval(()=>{ if(syncUrl && autoSync && !syncing) pullNow(true); },15000);
+  const li=document.getElementById('liveIndicator'); if(li) li.style.display='';
+}
+function stopPolling(){
+  if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+  const li=document.getElementById('liveIndicator'); if(li) li.style.display='none';
 }
 function copyShareLink(){
   if(!syncUrl){ toast('Connect a Google Sheet first'); return; }
@@ -1352,6 +1371,8 @@ async function wipeAll(){
     // Always pull on page load when a sheet is connected — ensures any device gets shared data
     setSyncState('Connected — pulling latest data…');
     await pullNow();
+    // Start background polling so changes from other devices appear automatically
+    if(autoSync) startPolling();
   } else {
     render();
   }
