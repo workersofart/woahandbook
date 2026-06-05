@@ -362,45 +362,39 @@
 
   <!-- ============ SYNC ============ -->
   <section class="view" id="v-sync">
-    <div class="vhead"><h2>Sync &amp; Settings</h2><p>Connect this dashboard to a shared Google Sheet so the whole team sees the same live data.</p></div>
-
+    <div class="vhead"><h2>Sync &amp; Settings</h2><p>One shared database URL — every device on the same link sees the same tasks in real time.</p></div>
     <div class="card">
-      <h3>Connection</h3>
-      <div class="ch-sub">Paste the web-app URL from your Google Sheet's Apps Script (steps below). Everyone who uses this dashboard with the same URL shares one source of truth.</div>
-      <div class="fld" style="font-family:ui-sans-serif,system-ui,sans-serif">
-        <label>Google Sheet web-app URL</label>
-        <input id="syncUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      <h3>Team Database</h3>
+      <div class="ch-sub">Create a free Firebase Realtime Database and paste the URL below. Every device that opens this page with the same database URL shares one live dataset — no Google Sheet required.</div>
+      <div class="fld" style="font-family:ui-sans-serif,system-ui,sans-serif;margin-top:12px">
+        <label>Firebase Database URL</label>
+        <input id="dbUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" style="font-family:ui-monospace,monospace;font-size:13px">
       </div>
-      <div class="actions">
-        <button class="btn" onclick="saveSyncUrl()">Save &amp; connect</button>
-        <button class="btn ghost" onclick="pullNow()">Pull from sheet</button>
-        <button class="btn ghost" onclick="pushNow()">Push to sheet</button>
-        <button class="btn ghost" onclick="copyShareLink()" id="shareLinkBtn" style="display:none">📋 Copy shareable link</button>
-        <span class="hint" id="syncState">Not connected — data is stored only in this browser.</span>
+      <div class="actions" style="margin-top:10px">
+        <button class="btn" onclick="saveDbUrl()">Save &amp; connect</button>
+        <button class="btn ghost" onclick="pullNow()" id="pullBtn" style="display:none">&#x2193; Pull now</button>
+        <button class="btn ghost" onclick="copyShareLink()" id="shareLinkBtn" style="display:none">&#x1F4CB; Copy shareable link</button>
+        <span class="hint" id="syncState" style="margin-left:6px">Not connected — data stored in this browser only.</span>
       </div>
       <div class="legend" id="syncMeta"></div>
-      <label class="hint" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-top:10px"><input type="checkbox" id="autoSync" onchange="toggleAuto()" style="width:auto;margin:0">Auto-sync: push every change, auto-refresh every 15 s <span id="liveIndicator" style="display:none;background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;letter-spacing:.05em">● LIVE</span></label>
+      <label class="hint" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-top:10px">
+        <input type="checkbox" id="autoSync" onchange="toggleAuto()" style="width:auto;margin:0">
+        Auto-sync: push every change, auto-refresh every 10 s
+        <span id="liveIndicator" style="display:none;background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;letter-spacing:.05em">&#x25CF; LIVE</span>
+      </label>
     </div>
-
-    <div class="card">
-      <h3>One-time setup — 5 minutes</h3>
-      <div class="ch-sub">Do this once on the Google account that owns the team sheet.</div>
-      <ol style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;line-height:1.85;margin:0 0 0 18px;color:var(--ink)">
-        <li>Create a Google Sheet (any blank one). Name it e.g. <b>WOA Tasks</b>.</li>
-        <li>In the sheet menu: <b>Extensions → Apps Script</b>.</li>
-        <li>Delete whatever code is there, paste the script below, click the <b>Save</b> (disk) icon.</li>
-        <li>Click <b>Deploy → New deployment</b>. For type, choose <b>Web app</b>.</li>
-        <li>Set <b>Execute as: Me</b>, and <b>Who has access: Anyone</b>. Click <b>Deploy</b>.</li>
-        <li>Authorize when prompted (it's your own script — approve it).</li>
-        <li>Copy the <b>Web app URL</b> it gives you, paste it into the Connection box above, and hit <b>Save &amp; connect</b>.</li>
+    <div class="card" style="margin-top:16px">
+      <h3>One-time setup — 2 minutes</h3>
+      <div class="ch-sub">Do this once. Share the link with your team — they auto-connect instantly.</div>
+      <ol style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13.5px;line-height:1.9;margin:12px 0 0 18px;color:var(--ink)">
+        <li>Go to <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent)">console.firebase.google.com</a> → create a free project.</li>
+        <li>In the sidebar: <b>Build &rarr; Realtime Database &rarr; Create database</b>.</li>
+        <li>Choose <b>Start in test mode</b> (open read/write to get started).</li>
+        <li>Copy the URL shown (e.g. <code style="font-size:12px">https://my-project-rtdb.firebaseio.com</code>).</li>
+        <li>Paste it above and click <b>Save &amp; connect</b>.</li>
+        <li>Click <b>&#x1F4CB; Copy shareable link</b> and send to your team. Done.</li>
       </ol>
-      <div class="note" style="margin-top:12px;border-color:var(--amber);color:var(--ink)"><b>Important — this is a new script version.</b> Re-paste the code below over your existing Apps Script, save, then <b>Deploy → Manage deployments → ✎ edit → Version: New version → Deploy</b> (the “New version” step is what makes it live — your URL stays the same). After the next <b>Push to sheet</b>, a styled <b>Task Review</b> tab appears: tasks grouped by date, checkboxes, priority colours, and a % completed line per group. The old JSON sheet is no longer used and can be deleted.</div>
-      <div class="actions" style="margin-top:14px">
-        <button class="btn" onclick="copyScript()">Copy Apps Script</button>
-        <span class="hint">Paste this into the Apps Script editor in step 3.</span>
-      </div>
-      <pre id="scriptBox" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.5;white-space:pre;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 15px;margin-top:12px;max-height:300px;overflow:auto;color:var(--ink)"></pre>
-      <div class="note" style="margin-top:14px">Heads-up on sharing: setting access to “Anyone” means anyone with the long, unguessable URL can read and write the sheet. For a small studio that's usually fine, but treat the URL like a password — share it only inside your team. If you need stricter control later, this is the point where a proper login-based backend becomes worth it.</div>
+      <div class="note" style="margin-top:14px">Free Firebase Spark plan: 1 GB storage, 10 GB/month transfer — plenty for a studio task list. After 30 days in test mode, update your database security rules.</div>
     </div>
   </section>
 </div>
@@ -409,13 +403,12 @@
 
 <script>
 const KEY='woa:tasks:v1';
-const URLKEY='woa:syncurl:v1';
-const AUTOKEY='woa:autosync:v1';
+const DBKEY='woa:dburl:v1';
 let tasks=[];
 let editId=null;
 let workType='project';
 let sortKey='due', sortDir=1;
-let syncUrl='', autoSync=false, syncing=false, pollTimer=null;
+let dbUrl='', autoSync=false, syncing=false, pollTimer=null;
 
 /* ---------- predefined dropdown lists (editable, persisted) ---------- */
 const OWNERKEY='woa:owners:v1', PROJKEY='woa:projects:v1';
@@ -434,8 +427,8 @@ async function lsSet(k,v){
 }
 async function load(){
   const v=await lsGet(KEY); tasks=v?JSON.parse(v):[];
-  syncUrl=(await lsGet(URLKEY))||'';
-  autoSync=(await lsGet(AUTOKEY))==='1';
+  dbUrl=(await lsGet(DBKEY))||'';
+  autoSync=(await lsGet('woa:autosync:v1'))==='1';
   const o=await lsGet(OWNERKEY); if(o){ try{ OWNERS=JSON.parse(o); }catch(e){} }
   const p=await lsGet(PROJKEY); if(p){ try{ PROJECTS=JSON.parse(p); }catch(e){} }
 }
@@ -445,103 +438,73 @@ async function saveLists(){
 }
 async function persist(){
   await lsSet(KEY, JSON.stringify(tasks));
-  if(autoSync && syncUrl && !syncing) pushNow(true);
+  if(autoSync && dbUrl && !syncing) pushNow();
 }
 
-/* ---------- Google Sheets sync ---------- */
+/* ---------- Firebase Realtime Database sync ---------- */
+const DBKEY_SAVED='woa:dburl:v1';
 function setSyncState(msg,ok){
   const el=document.getElementById('syncState'); if(!el) return;
-  el.textContent=msg; el.style.color= ok===true?'var(--green)': ok===false?'var(--red)':'var(--muted)';
+  el.textContent=msg; el.style.color=ok===true?'var(--green)':ok===false?'var(--red)':'var(--muted)';
 }
-async function saveSyncUrl(){
-  const u=document.getElementById('syncUrl').value.trim();
-  if(u && !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(u)){
-    if(!confirm('That doesn\'t look like an Apps Script /exec URL. Save anyway?')) return;
-  }
-  syncUrl=u; await lsSet(URLKEY,u);
-  const shareBtnEl=document.getElementById('shareLinkBtn');
-  if(shareBtnEl) shareBtnEl.style.display=u?'':'none';
-  if(!u){ setSyncState('Disconnected — data stored only in this browser.'); return; }
-  setSyncState('Connecting…'); await pullNow();
+async function saveDbUrl(){
+  const u=document.getElementById('dbUrl').value.trim().replace(/\/+$/,'');
+  dbUrl=u; await lsSet(DBKEY,u);
+  const shareBtn=document.getElementById('shareLinkBtn'), pullBtn=document.getElementById('pullBtn');
+  if(shareBtn) shareBtn.style.display=u?'':'none';
+  if(pullBtn) pullBtn.style.display=u?'':'none';
+  if(!u){ setSyncState('Disconnected — data stored in this browser only.'); stopPolling(); render(); return; }
+  setSyncState('Connecting…');
+  await pullNow();
+  if(autoSync) startPolling();
 }
-async function pushNow(silent){
-  if(!syncUrl){ if(!silent) toast('Connect a Google Sheet first'); return; }
-  // Safety: never let an auto-push silently wipe the sheet with an empty list.
-  if(!tasks.length){
-    if(silent){ return; }
-    if(!confirm('You have 0 tasks. Pushing will leave the sheet empty. Continue?')) return;
-  }
-  syncing=true; if(!silent) setSyncState('Pushing…');
+async function pushNow(){
+  if(!dbUrl || !tasks.length) return;
+  syncing=true;
   try{
-    // Write via GET query (?action=save&data=...). GET to Apps Script is allowed
-    // cross-origin and returns readable JSON, so we can confirm the write.
-    const payload=encodeURIComponent(JSON.stringify({tasks}));
-    if(payload.length>7000){
-      // Too big for a URL — send via POST (no-cors; response unreadable, verify by pulling).
-      await fetch(syncUrl,{method:'POST',mode:'no-cors',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({action:'save',tasks})});
-      const now=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-      setSyncState('Pushed at '+now+' (large set) — hit Pull to verify.');
-      syncing=false; return;
-    }
-    const r=await fetch(syncUrl+'?action=save&t='+Date.now()+'&data='+payload);
-    const txt=await r.text();
-    let ok=false; try{ ok=JSON.parse(txt).ok===true; }catch(_){}
+    const body=JSON.stringify({tasks,owners:OWNERS,projects:PROJECTS});
+    await fetch(dbUrl+'/woa.json',{method:'PUT',headers:{'Content-Type':'application/json'},body});
     const now=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    if(ok){
-      setSyncState('Synced ✓ pushed at '+now,true);
-      document.getElementById('syncMeta').textContent=tasks.length+' tasks written to the shared sheet.';
-    } else {
-      setSyncState('Pushed at '+now+' (unconfirmed) — hit Pull to verify.');
-    }
-  }catch(e){ setSyncState('Push failed — network error. Check your connection.',false); }
+    setSyncState('Synced ✓ saved at '+now,true);
+  }catch(e){ setSyncState('Save failed — check your database URL.',false); }
   syncing=false;
 }
 async function pullNow(silent){
-  if(!syncUrl){ if(!silent) toast('Connect a Google Sheet first'); return; }
-  if(syncing) return; // don't overlap
-  syncing=true; if(!silent) setSyncState('Pulling…');
+  if(!dbUrl){ if(!silent) toast('Connect a Firebase database first'); return; }
+  if(syncing) return;
+  syncing=true; if(!silent) setSyncState('Loading…');
   try{
-    const r=await fetch(syncUrl+'?action=load&t='+Date.now());
-    const txt=await r.text();
-    let data; try{ data=JSON.parse(txt); }catch(_){ throw new Error('non-json'); }
-    if(Array.isArray(data.tasks)){
-      if(data.tasks.length===0 && tasks.length>0){
-        if(!silent){
-          setSyncState('Sheet is empty but this device has '+tasks.length+' tasks. Use Push to upload them.',false);
-        }
-        syncing=false; return;
-      }
-      // Only update & re-render if data actually changed (avoids disrupting user on poll)
+    const r=await fetch(dbUrl+'/woa.json?t='+Date.now());
+    const data=await r.json();
+    if(data && Array.isArray(data.tasks)){
       const incoming=JSON.stringify(data.tasks);
-      const current=JSON.stringify(tasks);
-      if(incoming!==current){
+      if(incoming!==JSON.stringify(tasks)){
         tasks=data.tasks;
         await lsSet(KEY,JSON.stringify(tasks));
         render();
       }
+      if(data.owners && Array.isArray(data.owners)) OWNERS=data.owners;
+      if(data.projects && Array.isArray(data.projects)) PROJECTS=data.projects;
+      refreshLists();
       const now=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-      setSyncState('Synced ✓ '+(silent?'auto-':'')+'pulled at '+now,true);
-      document.getElementById('syncMeta').textContent=tasks.length+' tasks loaded from the shared sheet.';
-    } else { if(!silent) setSyncState('Connected, but sheet returned no task list.',false); }
-  }catch(e){
-    if(!silent) setSyncState('Pull failed — if the URL works in a browser tab, redeploy the script (see fix below).',false);
-  }
+      setSyncState('Synced ✓ '+(silent?'auto-':'')+'updated at '+now,true);
+      document.getElementById('syncMeta').textContent=tasks.length+' tasks in shared database.';
+    } else if(data===null && tasks.length>0){
+      syncing=false; await pushNow(); syncing=true;
+    } else if(data===null){ render(); }
+  }catch(e){ if(!silent) setSyncState('Connection failed — check your database URL.',false); }
   syncing=false;
 }
-
 async function toggleAuto(){
   autoSync=document.getElementById('autoSync').checked;
-  await lsSet(AUTOKEY, autoSync?'1':'0');
-  if(autoSync && syncUrl){ pushNow(true); startPolling(); }
+  await lsSet('woa:autosync:v1',autoSync?'1':'0');
+  if(autoSync && dbUrl){ await pushNow(); startPolling(); }
   else { stopPolling(); }
 }
 function startPolling(){
   stopPolling();
-  if(!syncUrl || !autoSync) return;
-  // Poll every 15 seconds — pick up changes made by other team members
-  pollTimer=setInterval(()=>{ if(syncUrl && autoSync && !syncing) pullNow(true); },15000);
+  if(!dbUrl||!autoSync) return;
+  pollTimer=setInterval(()=>{ if(dbUrl&&autoSync&&!syncing) pullNow(true); },10000);
   const li=document.getElementById('liveIndicator'); if(li) li.style.display='';
 }
 function stopPolling(){
@@ -549,161 +512,11 @@ function stopPolling(){
   const li=document.getElementById('liveIndicator'); if(li) li.style.display='none';
 }
 function copyShareLink(){
-  if(!syncUrl){ toast('Connect a Google Sheet first'); return; }
-  const base=location.origin+location.pathname;
-  const link=base+'#sync='+encodeURIComponent(syncUrl);
-  navigator.clipboard.writeText(link).then(()=>toast('Shareable link copied! Anyone who opens it will auto-connect to the same sheet.')).catch(()=>{
-    prompt('Copy this link to share with your team:',link);
-  });
-}
-
-const APPS_SCRIPT=`// ==== WOA Tasks sync v3 — styled review sheet + dashboard push/pull ====
-var HEADERS = ['Date','✓','Task','Assigned To','Project / Domain','Priority','Status','Remarks'];
-var W = [110, 36, 300, 130, 170, 90, 110, 240];      // column widths
-var INK='#1a1815', LINE='#c9c2b4', HEADBG='#1a1815', HEADFG='#ffffff';
-var GROUPBG='#f4f1ea', DONEBG='#eef5e6', BLOCKBG='#fbecec';
-
-function ss_(){ return SpreadsheetApp.getActiveSpreadsheet(); }
-function syncSheet_(){
-  var sh = ss_().getSheetByName('_sync') || ss_().insertSheet('_sync');
-  sh.hideSheet(); return sh;
-}
-function reviewSheet_(){
-  return ss_().getSheetByName('Task Review') || ss_().insertSheet('Task Review');
-}
-function out_(obj){
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}
-function read_(){
-  var sh = syncSheet_(); var last = sh.getLastRow();
-  var json = last >= 1 ? sh.getRange(last,1).getValue() : '';
-  try{ return JSON.parse(json); }catch(err){ return {tasks:[]}; }
-}
-function titleById_(tasks,id){ for (var i=0;i<tasks.length;i++) if (tasks[i].id===id) return tasks[i].title; return ''; }
-function fmtDate_(iso){
-  if(!iso) return 'No date';
-  var d = new Date(iso+'T00:00:00');
-  if (isNaN(d)) return iso;
-  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'd MMMM yyyy');
-}
-
-function write_(tasks){
-  tasks = tasks || [];
-  // machine record the dashboard reads back
-  syncSheet_().getRange(1,1).setValue(JSON.stringify({tasks:tasks, savedAt:new Date().toISOString()}));
-
-  var sh = reviewSheet_();
-  sh.clear();
-  sh.getDataRange().clearFormat && sh.clearFormats();
-  var N = HEADERS.length;
-
-  // column widths
-  for (var c=0;c<N;c++) sh.setColumnWidth(c+1, W[c]);
-
-  // title banner
-  sh.getRange(1,1,1,N).merge().setValue('WOA — Task Review')
-    .setFontSize(16).setFontWeight('bold').setFontColor(HEADFG)
-    .setBackground(HEADBG).setHorizontalAlignment('left').setVerticalAlignment('middle');
-  sh.setRowHeight(1, 38);
-  sh.getRange(2,1,1,N).merge()
-    .setValue('Auto-generated from the WOA dashboard · last synced '+Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'d MMM yyyy HH:mm'))
-    .setFontColor('#7a7468').setFontStyle('italic').setFontSize(9);
-
-  // header row
-  var hr = 3;
-  sh.getRange(hr,1,1,N).setValues([HEADERS])
-    .setFontWeight('bold').setFontColor(HEADFG).setBackground(HEADBG)
-    .setHorizontalAlignment('center').setVerticalAlignment('middle');
-  sh.setRowHeight(hr, 28);
-
-  // group tasks by due date, sorted (dated first, ascending; no-date last)
-  var groups = {}, order = [];
-  tasks.forEach(function(t){
-    var k = t.due || '';
-    if (!groups[k]){ groups[k]=[]; order.push(k); }
-    groups[k].push(t);
-  });
-  order.sort(function(a,b){ if(a==='') return 1; if(b==='') return -1; return a<b?-1:a>b?1:0; });
-
-  var r = hr+1;
-  var prioRank = {High:0,Medium:1,Low:2};
-
-  order.forEach(function(k){
-    var g = groups[k].slice().sort(function(a,b){
-      return (prioRank[a.priority]||9)-(prioRank[b.priority]||9);
-    });
-    var startRow = r;
-    g.forEach(function(t){
-      var isLeader = t.type==='leadership';
-      var done = t.status==='Done';
-      var row = [
-        '',                                   // date (merged later)
-        done ? '☑' : '☐',                     // checkbox glyph
-        t.title||'',
-        t.owner||'',
-        isLeader ? (t.domain||'') : (t.project||''),
-        t.priority||'',
-        t.status||'',
-        t.blocker ? ('Blocked: '+t.blocker) : ''
-      ];
-      sh.getRange(r,1,1,N).setValues([row]);
-      sh.setRowHeight(r, 24);
-      // row background by state
-      if (done) sh.getRange(r,2,1,N-1).setBackground(DONEBG);
-      else if (t.status==='Blocked') sh.getRange(r,2,1,N-1).setBackground(BLOCKBG);
-      // checkbox + status centered
-      sh.getRange(r,2).setHorizontalAlignment('center').setFontSize(12);
-      sh.getRange(r,6,1,2).setHorizontalAlignment('center');
-      // priority color
-      var pc = t.priority==='High'?'#a32d2d':t.priority==='Medium'?'#9a6a0c':'#7a7468';
-      sh.getRange(r,6).setFontColor(pc).setFontWeight('bold');
-      r++;
-    });
-    // % completed for this group
-    var doneCount = g.filter(function(t){return t.status==='Done';}).length;
-    var pct = g.length ? Math.round(doneCount/g.length*100) : 0;
-    sh.getRange(r,1,1,N).setBackground(GROUPBG);
-    sh.getRange(r,1).setValue(pct+'%').setFontWeight('bold').setHorizontalAlignment('center');
-    sh.getRange(r,3).setValue('COMPLETED ('+doneCount+'/'+g.length+')').setFontWeight('bold').setFontColor('#3b6d11');
-    sh.setRowHeight(r, 22);
-    r++;
-
-    // merge the date cell vertically across this group's task rows + summary
-    var span = r - startRow;
-    if (span > 0){
-      sh.getRange(startRow,1,span,1).merge()
-        .setValue(fmtDate_(k))
-        .setFontWeight('bold').setVerticalAlignment('middle').setHorizontalAlignment('center')
-        .setBackground(GROUPBG).setWrap(true);
-    }
-  });
-
-  // borders + freeze
-  var lastRow = r-1;
-  if (lastRow >= hr){
-    sh.getRange(hr,1,lastRow-hr+1,N)
-      .setBorder(true,true,true,true,true,true,LINE,SpreadsheetApp.BorderStyle.SOLID);
-  }
-  sh.setFrozenRows(hr);
-  sh.getRange(hr+1, 1, Math.max(1,lastRow-hr), N).setVerticalAlignment('middle');
-}
-
-function doGet(e){
-  var p = (e && e.parameter) || {};
-  if (p.action === 'save' && p.data){ try{ write_(JSON.parse(p.data).tasks); }catch(err){} return out_({ok:true}); }
-  return out_(read_());
-}
-function doPost(e){
-  try{ var body = JSON.parse(e.postData.contents); if (body.action==='save') write_(body.tasks); }catch(err){}
-  return out_({ok:true});
-}`;
-
-async function copyScript(){
-  try{ await navigator.clipboard.writeText(APPS_SCRIPT); toast('Apps Script copied'); }
-  catch(e){ const b=document.getElementById('scriptBox'); const r=document.createRange();
-    r.selectNode(b); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
-    try{document.execCommand('copy');toast('Apps Script copied');}catch(_){toast('Select the code and copy manually');}
-    s.removeAllRanges(); }
+  if(!dbUrl){ toast('Connect a database first'); return; }
+  const link=location.origin+location.pathname+'#db='+encodeURIComponent(dbUrl);
+  navigator.clipboard.writeText(link)
+    .then(()=>toast('Shareable link copied! Anyone who opens it auto-connects to the shared database.'))
+    .catch(()=>prompt('Copy this link:',link));
 }
 
 /* ---------- helpers ---------- */
@@ -1350,7 +1163,6 @@ async function wipeAll(){
   tickClock(); setInterval(tickClock,30000);
   mondayNote();
   document.getElementById('f_due').value='';
-  document.getElementById('scriptBox').textContent=APPS_SCRIPT;
   await load();
   // Check URL hash for embedded sync URL shared via link (e.g. #sync=https://...)
   const hashMatch=location.hash.match(/[#&]sync=([^&]+)/);
