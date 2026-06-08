@@ -23,7 +23,7 @@
   .wrap{max-width:1180px;margin:0 auto;padding:0 22px 80px}
   header.top{display:flex;align-items:flex-end;justify-content:space-between;
     padding:30px 0 18px;border-bottom:2px solid var(--ink);margin-bottom:4px;gap:20px;flex-wrap:wrap}
-  .brand h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .brand h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-heihght:1}
   .brand .sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;letter-spacing:.22em;
     text-transform:uppercase;color:var(--muted);margin-top:7px}
   .clock{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);text-align:right}
@@ -608,6 +608,7 @@ async function saveDbUrl(){
   if(!u){ setSyncState('Disconnected.'); stopPolling(); render(); return; }
   setSyncState('Connecting…');
   await pullNow();
+    const _se=document.getElementById('syncState'); if(_se&&_se.textContent==='Loading…'){setSyncState('Connected ✓ at '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}),true);}
   if(autoSync) startPolling();
 }
 async function pushNow(){
@@ -1778,7 +1779,7 @@ async function deleteIntern(id, withTasks){
   document.getElementById('autoSync').checked=autoSync;
   const shareBtn=document.getElementById('shareLinkBtn'); if(shareBtn) shareBtn.style.display=dbUrl?'':'none';
   const pullBtnEl=document.getElementById('pullBtn'); if(pullBtnEl) pullBtnEl.style.display=dbUrl?'':'none';
-  if(dbUrl){ setSyncState('Connecting…'); await pullNow(); if(autoSync) startPolling(); }
+  if(dbUrl){ setSyncState('Connecting…'); await pullNow(); const _se2=document.getElementById('syncState'); if(_se2&&_se2.textContent==='Loading…'){setSyncState('Connected ✓ at '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}),true);} if(autoSync) startPolling(); }…'); await pullNow(); if(autoSync) startPolling(); }
   else render();
 })();
 </script>
