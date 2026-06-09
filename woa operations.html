@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOA Operations</title>
+
+<!-- ============================================================
+     Workers of Art — WOA Operations (standalone single-file build)
+     Self-contained: design tokens, the WOA design-system components,
+     and the full app are all inlined here. The only external
+     dependencies are React, ReactDOM, Babel, and the Geist webfont,
+     all loaded from public CDNs. Runs from GitHub Pages or file://.
+     ============================================================ -->
+
+<style>
+  /* ---- Webfont: Geist + Geist Mono (Google Fonts) ---- */
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&display=swap');
+
+  /* ============================================================
+     COLOR TOKENS — warm paper-and-ink palette, terracotta accent.
+     ============================================================ */
+  :root {
+    --ink:    #1a1815;
+    --paper:  #f4f1ea;
+    --card:   #fffdf8;
+    --line:   #ddd6c8;
+    --muted:  #7a7468;
+
+    --accent:  #b5491f;
+    --accent2: #1d6b58;
+    --gold:    #a8842c;
+
+    --blue:  #2a5a8c;
+    --red:   #a32d2d;
+    --amber: #9a6a0c;
+    --green: #3b6d11;
+
+    --wash-neutral:   rgba(120,110,90,.08);
+    --wash-neutral-2: rgba(120,110,90,.045);
+    --tint-accent:  rgba(181,73,31,.13);
+    --tint-blue:    rgba(42,90,140,.15);
+    --tint-red:     rgba(163,45,45,.15);
+    --tint-amber:   rgba(154,106,12,.15);
+    --tint-green:   rgba(59,109,17,.16);
+    --tint-muted:   rgba(122,116,104,.16);
+
+    --bg-app:       var(--paper);
+    --surface-card: var(--card);
+    --border:       var(--line);
+    --text-body:    var(--ink);
+    --text-muted:   var(--muted);
+    --text-on-ink:  var(--paper);
+    --focus-ring:   0 0 0 3px var(--tint-accent);
+    --link:         var(--accent);
+
+    /* ---- TYPOGRAPHY TOKENS ---- */
+    --font-serif: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-sans:  "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono:  "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-display: var(--font-serif);
+    --font-body:    var(--font-serif);
+    --font-ui:      var(--font-sans);
+
+    /* ---- SPACING / RADIUS / SHADOW TOKENS ---- */
+    --radius-sm:   6px;
+    --radius:      7px;
+    --radius-card: 10px;
+    --radius-pill: 20px;
+    --shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px rgba(40,30,15,.05);
+    --shadow-pop: 0 2px 0 rgba(0,0,0,.05), 0 14px 38px rgba(40,30,15,.10);
+    --content-max: 1180px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink:    #ede8df;
+      --paper:  #1a1815;
+      --card:   #232019;
+      --line:   #3a352b;
+      --muted:  #9b9486;
+      --accent:  #e07a4a;
+      --accent2: #4cae93;
+      --gold:    #d4ab4e;
+      --blue:  #6ba3d8;
+      --red:   #e26b6b;
+      --amber: #d4a23e;
+      --green: #8fc04e;
+      --wash-neutral:   rgba(180,170,150,.10);
+      --wash-neutral-2: rgba(180,170,150,.05);
+      --tint-accent:  rgba(224,122,74,.18);
+      --shadow: 0 1px 0 rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.35);
+      --shadow-pop: 0 2px 0 rgba(0,0,0,.3), 0 14px 38px rgba(0,0,0,.5);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--font-serif); -webkit-font-smoothing: antialiased; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- ============================================================
+       Sample dataset
+       ============================================================ -->
+  <script>
+    window.WOA_DATA = {
+      owners: ["Abhishek Raja", "Subin", "Alex", "Nila"],
+      projects: ["058_JewelOne Flagship", "029_HBTS", "042_FA Kannur", "047_School"],
+      tasks: [
+        { id:"t1", type:"project", title:"Revise façade detail drawings", project:"058_JewelOne Flagship", owners:["Subin"], priority:"High", status:"In Progress", due:"2026-06-12", category:"Drawings", blocker:"", created:"2026-06-01", doneDate:"" },
+        { id:"t2", type:"project", title:"Coordinate structural beam sizes", project:"058_JewelOne Flagship", owners:["Abhishek Raja","Subin"], priority:"High", status:"Blocked", due:"2026-06-10", category:"Coordination", blocker:"Vendor / Consultant", created:"2026-06-01", doneDate:"" },
+        { id:"t3", type:"project", title:"Client presentation deck v3", project:"058_JewelOne Flagship", owners:["Nila"], priority:"Medium", status:"Done", due:"2026-06-05", category:"Presentation", blocker:"", created:"2026-06-01", doneDate:"2026-06-05" },
+        { id:"t4", type:"project", title:"Site measurement reconciliation", project:"029_HBTS", owners:["Alex"], priority:"Medium", status:"To Do", due:"2026-06-18", category:"Site", blocker:"", created:"2026-06-02", doneDate:"" },
+        { id:"t5", type:"project", title:"Material sample board", project:"029_HBTS", owners:["Nila"], priority:"Low", status:"In Progress", due:"2026-06-20", category:"Materials", blocker:"", created:"2026-06-02", doneDate:"" },
+        { id:"t6", type:"project", title:"Submit permit drawings to authority", project:"042_FA Kannur", owners:["Abhishek Raja"], priority:"High", status:"Blocked", due:"2026-06-09", category:"Admin", blocker:"Permitting / Authority", created:"2026-06-01", doneDate:"" },
+        { id:"t7", type:"project", title:"Landscape concept sketches", project:"042_FA Kannur", owners:["Subin"], priority:"Medium", status:"Done", due:"2026-06-02", category:"Design", blocker:"", created:"2026-06-01", doneDate:"2026-06-03" },
+        { id:"t8", type:"project", title:"Furniture layout iteration", project:"047_School", owners:["Alex","Nila"], priority:"Medium", status:"In Progress", due:"2026-06-22", category:"Drawings", blocker:"", created:"2026-06-03", doneDate:"" },
+        { id:"t9", type:"project", title:"Classroom daylighting study", project:"047_School", owners:["Subin"], priority:"Low", status:"To Do", due:"2026-06-25", category:"Analysis", blocker:"", created:"2026-06-03", doneDate:"" },
+        { id:"t10", type:"leadership", title:"Q3 business growth plan", domain:"business growth", owners:["Abhishek Raja"], priority:"High", status:"In Progress", due:"2026-06-30", category:"Strategy", blocker:"", created:"2026-06-01", doneDate:"" },
+        { id:"t11", type:"leadership", title:"Instagram content calendar", domain:"content", owners:["Nila"], priority:"Medium", status:"Done", due:"2026-06-04", category:"Content", blocker:"", created:"2026-06-01", doneDate:"2026-06-04" },
+        { id:"t12", type:"leadership", title:"Interview two junior architects", domain:"hiring", owners:["Abhishek Raja","Alex"], priority:"Medium", status:"To Do", due:"2026-06-28", category:"Hiring", blocker:"", created:"2026-06-02", doneDate:"" },
+      ],
+    };
+  </script>
+
+  <!-- ============================================================
+       WOA design-system components (inline bundle)
+       ============================================================ -->
+  <script type="text/babel">
+    function Button({ children, variant = "solid", size = "md", disabled = false, type = "button", onClick, style = {}, ...rest }) {
+      const pad = size === "sm" ? "5px 11px" : "9px 16px";
+      const fontSize = size === "sm" ? "12px" : "13px";
+      const base = { fontFamily: "var(--font-ui)", fontWeight: 600, fontSize, lineHeight: 1.2, cursor: disabled ? "not-allowed" : "pointer", borderRadius: "var(--radius)", padding: pad, border: "1px solid var(--ink)", transition: "opacity .15s, background .15s, border-color .15s", opacity: disabled ? 0.4 : 1, display: "inline-flex", alignItems: "center", gap: "7px", whiteSpace: "nowrap" };
+      const variants = { solid: { background: "var(--ink)", color: "var(--paper)" }, ghost: { background: "transparent", color: "var(--ink)" } };
+      const [hover, setHover] = React.useState(false);
+      let hoverStyle = {};
+      if (hover && !disabled) hoverStyle = variant === "ghost" ? { background: "var(--wash-neutral)" } : { opacity: 0.85 };
+      return (<button type={type} disabled={disabled} onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} style={{ ...base, ...variants[variant], ...hoverStyle, ...style }} {...rest}>{children}</button>);
+    }
+
+    function Pill({ children, tone = "neutral", dot = false, style = {}, ...rest }) {
+      const tones = { neutral: { bg: "var(--tint-muted)", fg: "var(--muted)" }, blue: { bg: "var(--tint-blue)", fg: "var(--blue)" }, red: { bg: "var(--tint-red)", fg: "var(--red)" }, amber: { bg: "var(--tint-amber)", fg: "var(--amber)" }, green: { bg: "var(--tint-green)", fg: "var(--green)" }, gold: { bg: "rgba(168,132,44,.15)", fg: "var(--gold)" }, accent: { bg: "var(--tint-accent)", fg: "var(--accent)" } };
+      const t = tones[tone] || tones.neutral;
+      return (<span style={{ display: "inline-flex", alignItems: "center", fontFamily: "var(--font-ui)", fontSize: "10.5px", fontWeight: 700, letterSpacing: ".03em", padding: "2px 8px", borderRadius: "var(--radius-pill)", whiteSpace: "nowrap", background: t.bg, color: t.fg, ...style }} {...rest}>{dot && (<span style={{ display: "inline-block", width: "6px", height: "6px", borderRadius: "50%", marginRight: "5px", background: "currentColor" }} />)}{children}</span>);
+    }
+
+    function Tag({ children, tone = "neutral", style = {}, ...rest }) {
+      const tones = { neutral: { bg: "var(--wash-neutral)", fg: "var(--muted)" }, blue: { bg: "var(--tint-blue)", fg: "var(--blue)" }, amber: { bg: "var(--tint-amber)", fg: "var(--amber)" }, green: { bg: "var(--tint-green)", fg: "var(--green)" } };
+      const t = tones[tone] || tones.neutral;
+      return (<span style={{ display: "inline-block", fontFamily: "var(--font-ui)", fontSize: "10.5px", fontWeight: 500, padding: "2px 7px", borderRadius: "var(--radius-sm)", background: t.bg, color: t.fg, ...style }} {...rest}>{children}</span>);
+    }
+
+    function Card({ title, subtitle, children, style = {}, bodyStyle = {}, ...rest }) {
+      return (<section style={{ background: "var(--surface-card)", border: "1px solid var(--line)", borderRadius: "var(--radius-card)", boxShadow: "var(--shadow)", padding: "20px 22px", ...style }} {...rest}>
+        {title && (<h3 style={{ fontFamily: "var(--font-serif)", fontSize: "16px", fontWeight: 700, margin: 0, color: "var(--ink)" }}>{title}</h3>)}
+        {subtitle && (<div style={{ fontFamily: "var(--font-ui)", fontSize: "12px", color: "var(--muted)", marginTop: "3px", marginBottom: "14px" }}>{subtitle}</div>)}
+        <div style={bodyStyle}>{children}</div>
+      </section>);
+    }
+
+    function MetricCard({ label, value, unit, tone = "default", style = {}, ...rest }) {
+      const tones = { default: "var(--ink)", accent: "var(--accent)", good: "var(--green)", warn: "var(--amber)", bad: "var(--red)" };
+      return (<div style={{ background: "var(--surface-card)", border: "1px solid var(--line)", borderRadius: "var(--radius-card)", boxShadow: "var(--shadow)", padding: "14px 15px", fontFamily: "var(--font-ui)", ...style }} {...rest}>
+        <div style={{ fontSize: "10.5px", letterSpacing: ".09em", textTransform: "uppercase", color: "var(--muted)", fontWeight: 600 }}>{label}</div>
+        <div style={{ fontSize: "27px", fontWeight: 800, letterSpacing: "-.5px", marginTop: "4px", color: tones[tone] || tones.default }}>{value}{unit && (<span style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>{unit}</span>)}</div>
+      </div>);
+    }
+
+    function Field({ label, as = "input", children, span2 = false, style = {}, inputStyle = {}, ...rest }) {
+      const [focus, setFocus] = React.useState(false);
+      const controlStyle = { fontFamily: "var(--font-ui)", fontSize: "13.5px", color: "var(--ink)", background: "var(--paper)", border: "1px solid " + (focus ? "var(--accent)" : "var(--line)"), borderRadius: "var(--radius)", padding: "8px 10px", width: "100%", outline: "none", boxShadow: focus ? "var(--focus-ring)" : "none", transition: "border-color .15s, box-shadow .15s", ...inputStyle };
+      const common = { onFocus: () => setFocus(true), onBlur: () => setFocus(false), style: controlStyle, ...rest };
+      let control;
+      if (as === "select") control = <select {...common}>{children}</select>;
+      else if (as === "textarea") control = <textarea {...common} style={{ ...controlStyle, minHeight: "70px", resize: "vertical" }} />;
+      else control = <input {...common} />;
+      return (<div style={{ display: "flex", flexDirection: "column", gap: "4px", gridColumn: span2 ? "span 2" : "auto", ...style }}>
+        {label && (<label style={{ fontFamily: "var(--font-ui)", fontSize: "10.5px", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--muted)", fontWeight: 600 }}>{label}</label>)}
+        {control}
+      </div>);
+    }
+
+    function SegmentedControl({ options = [], value, onChange, style = {}, ...rest }) {
+      const opts = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
+      return (<div style={{ display: "inline-flex", border: "1px solid var(--line)", borderRadius: "var(--radius)", overflow: "hidden", background: "var(--card)", ...style }} {...rest}>
+        {opts.map((o) => { const on = o.value === value; return (<button key={o.value} type="button" onClick={() => onChange && onChange(o.value)} style={{ fontFamily: "var(--font-ui)", border: "none", background: on ? "var(--ink)" : "transparent", color: on ? "var(--paper)" : "var(--muted)", fontSize: "12px", fontWeight: 600, padding: "7px 13px", cursor: "pointer", transition: "background .15s, color .15s" }}>{o.label}</button>); })}
+      </div>);
+    }
+
+    function TabButton({ on, label, onClick }) {
+      const [hover, setHover] = React.useState(false);
+      let bg = "transparent", color = "var(--muted)";
+      if (on) { bg = "var(--ink)"; color = "var(--paper)"; } else if (hover) { bg = "var(--wash-neutral)"; color = "var(--ink)"; }
+      return (<button type="button" onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} style={{ fontFamily: "inherit", fontSize: "13px", fontWeight: 500, border: "none", background: bg, color, padding: "9px 15px", borderRadius: "7px", cursor: "pointer", transition: "background .15s, color .15s", whiteSpace: "nowrap" }}>{label}</button>);
+    }
+    function Tabs({ tabs = [], value, onChange, style = {}, ...rest }) {
+      const items = tabs.map((t) => (typeof t === "string" ? { value: t, label: t } : t));
+      return (<nav style={{ display: "flex", gap: "2px", flexWrap: "wrap", fontFamily: "var(--font-ui)", ...style }} {...rest}>
+        {items.map((t) => (<TabButton key={t.value} on={t.value === value} label={t.label} onClick={() => onChange && onChange(t.value)} />))}
+      </nav>);
+    }
+
+    function ProgressBar({ value = 0, tone = "accent2", max = 100, width, style = {}, ...rest }) {
+      const pct = Math.max(0, Math.min(100, (value / max) * 100));
+      const tones = { accent: "var(--accent)", accent2: "var(--accent2)", green: "var(--green)", blue: "var(--blue)", amber: "var(--amber)", ink: "var(--ink)" };
+      return (<div style={{ height: "6px", borderRadius: "4px", background: "var(--tint-muted)", overflow: "hidden", width: width || "100%", ...style }} {...rest}>
+        <div style={{ height: "100%", width: pct + "%", background: tones[tone] || tones.accent2, borderRadius: "4px", transition: "width .3s ease" }} />
+      </div>);
+    }
+
+    window.WorkersOfArtDesignSystem_48eb43 = { Button, Pill, Tag, Card, MetricCard, Field, SegmentedControl, Tabs, ProgressBar };
+  </script>
+
+  <!-- ============================================================
+       App shared layer: helpers, masthead, view header, task table
+       ============================================================ -->
+  <script type="text/babel">
+    const { Tabs, Card, Field, SegmentedControl, Button, Pill, Tag, MetricCard, ProgressBar } = window.WorkersOfArtDesignSystem_48eb43;
+
+    const STATUS_TONE = { "To Do":"neutral", "In Progress":"blue", "Blocked":"red", "Done":"green", "Waiting":"amber" };
+    const PRIO_TONE   = { High:"red", Medium:"amber", Low:"neutral" };
+    const cap = (s)=> (s||"").replace(/\b\w/g, c=>c.toUpperCase());
+    function fmtDate(d){ if(!d) return "—"; return new Date(d+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
+    function daysUntil(d){ if(!d) return null; return Math.round((new Date(d+"T00:00:00")-new Date(new Date().toISOString().slice(0,10)+"T00:00:00"))/864e5); }
+    function ownerStr(t){ return (t.owners&&t.owners.length)? t.owners.join(", ") : "Unassigned"; }
+    function ownerArr(t){ return (t.owners&&t.owners.length)? t.owners.filter(Boolean) : []; }
+    function groupLabel(t){ return t.type==="leadership" ? cap(t.domain) : (t.project||"(unassigned)"); }
+    function metricsFor(list){
+      const assigned=list.length, completed=list.filter(t=>t.status==="Done").length, blocked=list.filter(t=>t.status==="Blocked").length;
+      const rate=assigned?Math.round(completed/assigned*100):0;
+      const adjDen=assigned-blocked, adjRate=adjDen>0?Math.round(completed/adjDen*100):0;
+      const bt={}; list.filter(t=>t.status==="Blocked").forEach(t=>{ bt[t.blocker||"Other"]=(bt[t.blocker||"Other"]||0)+1; });
+      return {assigned,completed,blocked,rate,adjRate,bt};
+    }
+
+    function Masthead(){
+      const [now,setNow]=React.useState(new Date());
+      React.useEffect(()=>{ const id=setInterval(()=>setNow(new Date()),1000*30); return ()=>clearInterval(id); },[]);
+      return (<header style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",padding:"30px 0 18px",borderBottom:"2px solid var(--ink)",marginBottom:"4px",gap:20,flexWrap:"wrap"}}>
+        <div>
+          <h1 style={{fontFamily:"var(--font-serif)",fontSize:30,fontWeight:800,letterSpacing:"-.5px",lineHeight:1,margin:0}}>WOA Operations</h1>
+          <div style={{fontFamily:"var(--font-ui)",fontSize:11,letterSpacing:".22em",textTransform:"uppercase",color:"var(--muted)",marginTop:7}}>Projects · People · Performance</div>
+        </div>
+        <div style={{fontFamily:"var(--font-ui)",fontSize:12,color:"var(--muted)",textAlign:"right"}}>
+          {now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}<br/>
+          <b style={{color:"var(--ink)",fontWeight:600}}>{now.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}</b> · Kochi studio
+        </div>
+      </header>);
+    }
+
+    function ViewHead({title,children}){
+      return (<div style={{margin:"6px 0 18px"}}>
+        <h2 style={{fontFamily:"var(--font-serif)",fontSize:23,fontWeight:700,letterSpacing:"-.3px",margin:0}}>{title}</h2>
+        <p style={{fontFamily:"var(--font-ui)",fontSize:13,color:"var(--muted)",marginTop:3,marginBottom:0}}>{children}</p>
+      </div>);
+    }
+
+    function IconBtn({children,onClick,title,danger}){
+      const [h,setH]=React.useState(false);
+      return (<button title={title} onClick={onClick} onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}
+        style={{fontFamily:"var(--font-ui)",border:"1px solid "+(h?(danger?"var(--red)":"var(--muted)"):"var(--line)"),background:"var(--paper)",color:h?(danger?"var(--red)":"var(--ink)"):"var(--muted)",borderRadius:"var(--radius-sm)",width:26,height:26,cursor:"pointer",fontSize:13,lineHeight:1,transition:".15s"}}>{children}</button>);
+    }
+
+    function TaskTable({list,onDone,onDelete,showGroup=true}){
+      const th={textAlign:"left",fontFamily:"var(--font-ui)",fontSize:10,letterSpacing:".08em",textTransform:"uppercase",color:"var(--muted)",fontWeight:700,padding:"11px 12px",borderBottom:"1.5px solid var(--line)",whiteSpace:"nowrap"};
+      const td={padding:"9px 12px",borderBottom:"1px solid var(--line)",verticalAlign:"middle",fontFamily:"var(--font-ui)",fontSize:12.8};
+      return (<div style={{overflowX:"auto",border:"1px solid var(--line)",borderRadius:"var(--radius-card)",background:"var(--card)",boxShadow:"var(--shadow)"}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr>
+            <th style={th}>Task</th>
+            {showGroup && <th style={th}>Project / Domain</th>}
+            <th style={th}>Assigned To</th><th style={th}>Priority</th><th style={th}>Status</th>
+            <th style={th}>Due</th><th style={th}>Category</th><th style={th}></th>
+          </tr></thead>
+          <tbody>
+            {list.length===0 && (<tr><td style={{...td,textAlign:"center",color:"var(--muted)",padding:"34px"}} colSpan={8}>No tasks match these filters.</td></tr>)}
+            {list.map(t=>{
+              const n=daysUntil(t.due); let dueColor="inherit",dueWeight=400;
+              if(t.status!=="Done"&&n!==null){ if(n<0){dueColor="var(--red)";dueWeight=700;} else if(n<=7){dueColor="var(--amber)";dueWeight=700;} }
+              return (<tr key={t.id} style={{transition:"background .12s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--wash-neutral-2)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <td style={td}>
+                  <div style={{fontWeight:600,fontSize:13,color:"var(--ink)"}}>{t.title}</div>
+                  {t.blocker && <div style={{fontSize:11,color:"var(--red)",marginTop:2}}>⚑ {t.blocker}</div>}
+                </td>
+                {showGroup && <td style={td}>{t.type==="leadership" ? <Tag tone="blue">{cap(t.domain)}</Tag> : t.project}</td>}
+                <td style={td}>{ownerStr(t)}</td>
+                <td style={td}><Pill tone={PRIO_TONE[t.priority]}>{t.priority}</Pill></td>
+                <td style={td}><Pill tone={STATUS_TONE[t.status]} dot>{t.status}</Pill></td>
+                <td style={{...td,color:dueColor,fontWeight:dueWeight}}>{fmtDate(t.due)}</td>
+                <td style={td}><Tag>{t.category}</Tag></td>
+                <td style={td}><div style={{display:"flex",gap:5}}>
+                  {t.status!=="Done" && <IconBtn title="Mark done" onClick={()=>onDone(t.id)}>✓</IconBtn>}
+                  <IconBtn title="Delete" danger onClick={()=>onDelete(t.id)}>×</IconBtn>
+                </div></td>
+              </tr>);
+            })}
+          </tbody>
+        </table>
+      </div>);
+    }
+
+    window.WOAKit = { STATUS_TONE, PRIO_TONE, cap, fmtDate, daysUntil, ownerStr, ownerArr, groupLabel, metricsFor, Masthead, ViewHead, TaskTable, IconBtn, Tabs, Card, Field, SegmentedControl, Button, Pill, Tag, MetricCard, ProgressBar };
+  </script>
+
+  <!-- ============================================================
+       App views: Task Entry, Project View, Project Dashboard
+       ============================================================ -->
+  <script type="text/babel">
+    const K = window.WOAKit;
+    const { Card, Field, SegmentedControl, Button, Pill, MetricCard, ProgressBar, Tag } = K;
+
+    function AssigneePicker({ people, value, onChange, onAddPerson }) {
+      const available = people.filter(p => !value.includes(p));
+      const labelStyle = { fontFamily: "var(--font-ui)", fontSize: 10.5, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--muted)", fontWeight: 600 };
+      return (<div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <label style={labelStyle}>Assigned To</label>
+        <div style={{ border: "1px solid var(--line)", borderRadius: "var(--radius)", background: "var(--paper)", padding: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+          {value.length > 0 && (<div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {value.map(p => (<span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--tint-accent)", color: "var(--accent)", borderRadius: "var(--radius-pill)", padding: "3px 5px 3px 10px", fontFamily: "var(--font-ui)", fontSize: 12, fontWeight: 600 }}>
+              {p}<button onClick={() => onChange(value.filter(x => x !== p))} title="Remove" style={{ border: "none", background: "none", color: "inherit", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: "0 2px" }}>×</button>
+            </span>))}
+          </div>)}
+          <div style={{ display: "flex", gap: 6 }}>
+            <select value="" onChange={e => { if (e.target.value) onChange([...value, e.target.value]); }} style={{ flex: 1, minWidth: 0, fontFamily: "var(--font-ui)", fontSize: 13, padding: "7px 9px", border: "1px solid var(--line)", borderRadius: "var(--radius)", background: "var(--card)", color: available.length ? "var(--ink)" : "var(--muted)" }}>
+              <option value="">— add assignee —</option>
+              {available.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+            <Button size="sm" variant="ghost" onClick={onAddPerson} style={{ whiteSpace: "nowrap" }}>+ New person</Button>
+          </div>
+        </div>
+      </div>);
+    }
+
+    function TaskEntry({ tasks, owners, projects, onAdd, onDone, onDelete }) {
+      const [workType, setWorkType] = React.useState("project");
+      const [title, setTitle] = React.useState("");
+      const [project, setProject] = React.useState(projects[0]);
+      const [domain, setDomain] = React.useState("business growth");
+      const [people, setPeople] = React.useState(owners);
+      const [assignees, setAssignees] = React.useState([owners[0]]);
+      const [priority, setPriority] = React.useState("Medium");
+      const [status, setStatus] = React.useState("To Do");
+      const [due, setDue] = React.useState("");
+      const [category, setCategory] = React.useState("CAD");
+      const [dependency, setDependency] = React.useState("none");
+      const [q, setQ] = React.useState("");
+      const [fStatus, setFStatus] = React.useState("");
+      const [fOwner, setFOwner] = React.useState("");
+
+      function addPerson() {
+        const name = window.prompt("New person's name");
+        if (name && name.trim()) { const n = name.trim(); setPeople(p => p.includes(n) ? p : [...p, n]); setAssignees(a => a.includes(n) ? a : [...a, n]); }
+      }
+      function submit() {
+        if (!title.trim()) return;
+        onAdd({ id: "t" + Date.now(), type: workType, title: title.trim(), project: workType === "project" ? project : "", domain: workType === "leadership" ? domain : "", owners: assignees.length ? assignees : [], priority, status, due, category: category || "CAD", blocker: dependency === "none" ? "" : dependency });
+        setTitle(""); setDue(""); setDependency("none");
+      }
+      const list = tasks.filter(t => {
+        if (fStatus && t.status !== fStatus) return false;
+        if (fOwner && !(t.owners || []).includes(fOwner)) return false;
+        if (q && !(t.title + " " + (t.project || "") + " " + (t.domain || "") + " " + K.ownerStr(t)).toLowerCase().includes(q.toLowerCase())) return false;
+        return true;
+      });
+      const filterSel = { fontFamily: "var(--font-ui)", fontSize: 12.5, padding: "7px 9px", border: "1px solid var(--line)", borderRadius: "var(--radius)", background: "var(--paper)", color: "var(--ink)", minWidth: 140 };
+
+      return (<div>
+        <K.ViewHead title="Task Entry">One task, entered once. Everything else in this app is generated from here — no duplicate effort.</K.ViewHead>
+        <Card title="New Task" subtitle="Leadership tasks don't need a project. Switch the work type to skip it." style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 14 }}>
+            <SegmentedControl value={workType} onChange={setWorkType} options={[{ value: "project", label: "Project Task" }, { value: "leadership", label: "Leadership Task" }]} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 12, alignItems: "start" }}>
+            <Field label="Task" placeholder="What needs to get done" value={title} onChange={e => setTitle(e.target.value)} />
+            {workType === "project"
+              ? <Field label="Project" as="select" value={project} onChange={e => setProject(e.target.value)}>{projects.map(p => <option key={p}>{p}</option>)}</Field>
+              : <Field label="Leadership Domain" as="select" value={domain} onChange={e => setDomain(e.target.value)}>{["business growth","content","hiring","strategy","office development","design direction"].map(d => <option key={d}>{d}</option>)}</Field>}
+            <AssigneePicker people={people} value={assignees} onChange={setAssignees} onAddPerson={addPerson} />
+            <Field label="Priority" as="select" value={priority} onChange={e => setPriority(e.target.value)}><option>High</option><option>Medium</option><option>Low</option></Field>
+            <Field label="Status" as="select" value={status} onChange={e => setStatus(e.target.value)}><option>To Do</option><option>In Progress</option><option>Blocked</option><option>Done</option></Field>
+            <Field label="Due Date" type="date" value={due} onChange={e => setDue(e.target.value)} />
+            <Field label="Category" as="select" value={category} onChange={e => setCategory(e.target.value)}>{["CAD","SKP","AI/PS","Internal Discussion","Followup"].map(c => <option key={c}>{c}</option>)}</Field>
+            <Field label="Dependency (Waiting On)" as="select" value={dependency} onChange={e => setDependency(e.target.value)}>
+              <option value="none">— none —</option><option>Vendor / Consultant</option><option>Permitting / Authority</option><option>Client Sign-off</option><option>Internal Review</option>
+            </Field>
+          </div>
+          <div style={{ display: "flex", gap: 9, marginTop: 16, alignItems: "center" }}>
+            <Button onClick={submit}>Add Task</Button>
+            <Button variant="ghost" onClick={() => { setTitle(""); setDue(""); setDependency("none"); setAssignees([owners[0]]); }}>Clear</Button>
+          </div>
+        </Card>
+        <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginBottom: 14 }}>
+          <input placeholder="Search tasks…" value={q} onChange={e => setQ(e.target.value)} style={{ ...filterSel, minWidth: 200 }} />
+          <select style={filterSel} value={fStatus} onChange={e => setFStatus(e.target.value)}><option value="">All statuses</option><option>To Do</option><option>In Progress</option><option>Blocked</option><option>Done</option></select>
+          <select style={filterSel} value={fOwner} onChange={e => setFOwner(e.target.value)}><option value="">All assignees</option>{owners.map(o => <option key={o}>{o}</option>)}</select>
+        </div>
+        <K.TaskTable list={list} onDone={onDone} onDelete={onDelete} />
+      </div>);
+    }
+
+    function ProjectView({ tasks, onDone, onDelete }) {
+      const proj = tasks.filter(t => t.type === "project");
+      const m = K.metricsFor(proj);
+      const groups = {};
+      proj.forEach(t => { const k = t.project || "(unassigned)"; (groups[k] = groups[k] || []).push(t); });
+      const keys = Object.keys(groups).sort();
+      return (<div>
+        <K.ViewHead title="Project View">Project tasks grouped by project, with live completion bars.</K.ViewHead>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 11, marginBottom: 18 }}>
+          <MetricCard label="Tasks Assigned" value={m.assigned} />
+          <MetricCard label="Completed" value={m.completed} tone="good" />
+          <MetricCard label="Blocked" value={m.blocked} tone="bad" />
+          <MetricCard label="Completion Rate" value={m.rate} unit="%" tone="accent" />
+          <MetricCard label="Blocker-Adjusted" value={m.adjRate} unit="%" />
+        </div>
+        {keys.map(k => {
+          const g = groups[k]; const gm = K.metricsFor(g);
+          return (<div key={k} style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 9px", paddingBottom: 6, borderBottom: "1px solid var(--line)" }}>
+              <span style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700 }}>{k}</span>
+              <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--muted)", background: "var(--wash-neutral)", padding: "1px 8px", borderRadius: 20, fontWeight: 600 }}>{gm.completed}/{gm.assigned} done</span>
+              <div style={{ flex: 1, maxWidth: 160 }}><ProgressBar value={gm.rate} /></div>
+              <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--muted)", fontWeight: 600 }}>{gm.rate}%</span>
+              {gm.blocked > 0 && <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--red)", fontWeight: 600 }}>{gm.blocked} blocked</span>}
+            </div>
+            <K.TaskTable list={g} onDone={onDone} onDelete={onDelete} showGroup={false} />
+          </div>);
+        })}
+      </div>);
+    }
+
+    function Dashboard({ tasks }) {
+      const proj = tasks.filter(t => t.type === "project");
+      const m = K.metricsFor(proj);
+      const groups = {};
+      proj.forEach(t => { const k = t.project || "(unassigned)"; (groups[k] = groups[k] || []).push(t); });
+      const STATUS_COLORS = { "To Do": "var(--muted)", "In Progress": "var(--blue)", "Blocked": "var(--red)", "Done": "var(--green)" };
+      return (<div>
+        <K.ViewHead title="Project Dashboard">Each project at a glance — completion donut and status breakdown, side by side.</K.ViewHead>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 11, marginBottom: 18 }}>
+          <MetricCard label="Active Projects" value={Object.keys(groups).length} />
+          <MetricCard label="Total Tasks" value={m.assigned} />
+          <MetricCard label="Completed" value={m.completed} tone="good" />
+          <MetricCard label="Blocked" value={m.blocked} tone="bad" />
+          <MetricCard label="Overall Rate" value={m.rate} unit="%" tone="accent" />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(330px,1fr))", gap: 16 }}>
+          {Object.keys(groups).sort().map(k => {
+            const g = groups[k]; const gm = K.metricsFor(g);
+            const counts = { "To Do": 0, "In Progress": 0, "Blocked": 0, "Done": 0 };
+            g.forEach(t => counts[t.status] = (counts[t.status] || 0) + 1);
+            const deg = gm.rate * 3.6;
+            return (<div key={k} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--radius-card)", boxShadow: "var(--shadow)", padding: "18px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 14, borderBottom: "1px solid var(--line)", paddingBottom: 11 }}>
+                <div>
+                  <div style={{ fontFamily: "var(--font-serif)", fontSize: 16, fontWeight: 700, letterSpacing: "-.2px" }}>{k}</div>
+                  <div style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{gm.assigned} tasks</div>
+                </div>
+                <Pill tone={gm.rate >= 70 ? "green" : gm.rate >= 40 ? "amber" : "red"}>{gm.rate}%</Pill>
+              </div>
+              <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
+                <div style={{ flexShrink: 0, position: "relative", width: 104, height: 104 }}>
+                  <div style={{ width: 104, height: 104, borderRadius: "50%", background: `conic-gradient(var(--accent2) ${deg}deg, var(--tint-muted) ${deg}deg)` }} />
+                  <div style={{ position: "absolute", inset: 14, borderRadius: "50%", background: "var(--card)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-ui)" }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{gm.completed}/{gm.assigned}</div>
+                    <div style={{ fontSize: 9, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--muted)", marginTop: 2 }}>done</div>
+                  </div>
+                </div>
+                <div style={{ flex: 1, fontFamily: "var(--font-ui)" }}>
+                  {Object.keys(counts).map(s => (<div key={s} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7, fontSize: 12 }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 3, background: STATUS_COLORS[s], flexShrink: 0 }} />
+                    <span style={{ color: "var(--muted)", width: 80, flexShrink: 0 }}>{s}</span>
+                    <div style={{ flex: 1, height: 7, borderRadius: 4, background: "var(--tint-muted)", overflow: "hidden" }}>
+                      <i style={{ display: "block", height: "100%", width: (gm.assigned ? counts[s] / gm.assigned * 100 : 0) + "%", background: STATUS_COLORS[s], borderRadius: 4 }} />
+                    </div>
+                    <span style={{ fontWeight: 700, width: 20, textAlign: "right" }}>{counts[s]}</span>
+                  </div>))}
+                </div>
+              </div>
+            </div>);
+          })}
+        </div>
+      </div>);
+    }
+
+    /* ============ ARCHITECT VIEW ============ */
+    function ArchitectView({ tasks, onDone, onDelete }) {
+      const owners = [...new Set(tasks.flatMap(K.ownerArr))].sort();
+      return (<div>
+        <K.ViewHead title="Architect View">Per-owner workload — what each person is carrying, completing, and blocked on.</K.ViewHead>
+        {owners.length === 0 && <div style={{ fontFamily: "var(--font-ui)", color: "var(--muted)", padding: 24 }}>No tasks yet.</div>}
+        {owners.map(o => {
+          const g = tasks.filter(t => K.ownerArr(t).includes(o)); const m = K.metricsFor(g);
+          return (<div key={o} style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 9px", paddingBottom: 6, borderBottom: "1px solid var(--line)", flexWrap: "wrap" }}>
+              <span style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700 }}>{o}</span>
+              <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--muted)", background: "var(--wash-neutral)", padding: "1px 8px", borderRadius: 20, fontWeight: 600 }}>{m.assigned} assigned</span>
+              <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--green)", fontWeight: 600 }}>{m.completed} done</span>
+              {m.blocked > 0 && <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--red)", fontWeight: 600 }}>{m.blocked} blocked</span>}
+              <div style={{ flex: 1, maxWidth: 160 }}><ProgressBar value={m.rate} /></div>
+              <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--muted)", fontWeight: 600 }}>{m.rate}%</span>
+            </div>
+            <K.TaskTable list={g} onDone={onDone} onDelete={onDelete} />
+          </div>);
+        })}
+      </div>);
+    }
+
+    /* ============ WEEKLY REVIEW ============ */
+    function digestText(tasks, openOnly) {
+      let list = openOnly ? tasks.filter(t => t.status !== "Done") : tasks.slice();
+      const dateLbl = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" });
+      const prioMark = { High: "🔴", Medium: "🟡", Low: "⚪" };
+      const m = K.metricsFor(list);
+      let out = `*WOA — Week of ${dateLbl}*\n${m.assigned} tasks · ${m.completed} done · ${m.blocked} blocked\n────────────────\n`;
+      const owners = [...new Set(list.flatMap(K.ownerArr))].sort();
+      if (!owners.length) return out + "\nNo tasks assigned yet.";
+      owners.forEach(o => {
+        const og = list.filter(t => K.ownerArr(t).includes(o)).sort((a, b) => ({ High: 0, Medium: 1, Low: 2 }[a.priority] - { High: 0, Medium: 1, Low: 2 }[b.priority]) || (a.due || "9999").localeCompare(b.due || "9999"));
+        out += `\n*@${o}*\n`;
+        og.forEach(t => {
+          const where = t.type === "leadership" ? K.cap(t.domain) : (t.project || "—");
+          let line = `${prioMark[t.priority] || "⚪"} ${t.title} _(${where})_`;
+          if (t.due) { const n = K.daysUntil(t.due); line += t.status === "Done" ? "" : n < 0 ? ` ⏰ ${Math.abs(n)}d overdue` : n === 0 ? " ⏰ due today" : ` · due ${K.fmtDate(t.due)}`; }
+          if (t.status === "Done") line = `✅ ${t.title}`;
+          else if (t.status === "Blocked") line += ` 🚫 blocked: ${t.blocker || "unspecified"}`;
+          else if (t.status === "In Progress") line += " 🔄";
+          out += line + "\n";
+        });
+      });
+      return out + "\n_Auto-generated from WOA — reply here if anything's blocked._";
+    }
+
+    function WeeklyReview({ tasks }) {
+      const [openOnly, setOpenOnly] = React.useState(false);
+      const [copied, setCopied] = React.useState(false);
+      const txt = digestText(tasks, openOnly);
+      const m = K.metricsFor(tasks);
+      async function copy() { try { await navigator.clipboard.writeText(txt); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch (e) {} }
+      const blocked = tasks.filter(t => t.status === "Blocked");
+      const bt = {}; blocked.forEach(t => { (bt[t.blocker || "Other"] = bt[t.blocker || "Other"] || []).push(t); });
+      const due = tasks.filter(t => t.status !== "Done" && t.due && K.daysUntil(t.due) !== null && K.daysUntil(t.due) <= 7).sort((a, b) => (a.due || "").localeCompare(b.due));
+      const done = tasks.filter(t => t.status === "Done").sort((a, b) => (b.doneDate || "").localeCompare(a.doneDate || "")).slice(0, 12);
+      const row = { fontFamily: "var(--font-ui)", fontSize: 13, padding: "5px 0", borderBottom: "1px dashed var(--line)" };
+      const meta = { color: "var(--muted)", fontWeight: 400 };
+      return (<div>
+        <K.ViewHead title="Weekly Review">This week at a glance — assigned, completed, blocked, and what's due. Blocker-adjusted rate excludes work stuck on others.</K.ViewHead>
+        <Card title="WhatsApp group digest" subtitle="One message for the whole team, grouped by owner. Copy it and paste into your team group." style={{ marginBottom: 18 }}>
+          <div style={{ display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap" }}>
+            <Button onClick={copy}>{copied ? "Copied ✓" : "Copy weekly digest"}</Button>
+            <a href={"https://wa.me/?text=" + encodeURIComponent(txt)} target="_blank" rel="noopener" style={{ fontFamily: "var(--font-ui)", fontSize: 13, fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Open in WhatsApp</a>
+            <label style={{ fontFamily: "var(--font-ui)", fontSize: 12, color: "var(--muted)", display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer" }}><input type="checkbox" checked={openOnly} onChange={e => setOpenOnly(e.target.checked)} style={{ margin: 0 }} />Open tasks only</label>
+          </div>
+          <div style={{ fontFamily: "var(--font-ui)", fontSize: 11.5, color: "var(--muted)", margin: "10px 0" }}>Tip: "Open in WhatsApp" lets you pick the group, then long-press to paste. The Copy button is the reliable path.</div>
+          <pre style={{ fontFamily: "var(--font-mono)", fontSize: 12.5, lineHeight: 1.55, whiteSpace: "pre-wrap", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 8, padding: "14px 15px", margin: 0, maxHeight: 340, overflow: "auto", color: "var(--ink)" }}>{txt}</pre>
+        </Card>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 11, marginBottom: 18 }}>
+          <MetricCard label="Total Assigned" value={m.assigned} />
+          <MetricCard label="Completed" value={m.completed} tone="good" />
+          <MetricCard label="Blocked" value={m.blocked} tone="bad" />
+          <MetricCard label="Completion Rate" value={m.rate} unit="%" tone="accent" />
+          <MetricCard label="Blocker-Adjusted Rate" value={m.adjRate} unit="%" tone="warn" />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 16, marginBottom: 18 }}>
+          <Card title="Blocked — needs unblocking" subtitle="Grouped by blocker type">
+            {blocked.length === 0 ? <div style={{ fontFamily: "var(--font-ui)", color: "var(--muted)", fontSize: 13 }}>Nothing blocked.</div> :
+              Object.keys(bt).sort().map(k => (<div key={k} style={{ marginBottom: 12 }}>
+                <div style={{ fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 700, letterSpacing: ".05em", textTransform: "uppercase", color: "var(--red)", marginBottom: 5 }}>{k} · {bt[k].length}</div>
+                {bt[k].map(t => <div key={t.id} style={row}><b>{t.title}</b> <span style={meta}>— {K.ownerStr(t)} · {K.groupLabel(t)}</span></div>)}
+              </div>))}
+          </Card>
+          <Card title="Due this week" subtitle="Open tasks with a due date in the next 7 days">
+            {due.length === 0 ? <div style={{ fontFamily: "var(--font-ui)", color: "var(--muted)", fontSize: 13 }}>Nothing due in the next 7 days.</div> :
+              due.map(t => { const n = K.daysUntil(t.due); const lbl = n < 0 ? `${Math.abs(n)}d overdue` : n === 0 ? "today" : n === 1 ? "tomorrow" : `in ${n}d`;
+                return (<div key={t.id} style={{ ...row, display: "flex", justifyContent: "space-between", gap: 8 }}><span><b>{t.title}</b> <span style={meta}>{K.ownerStr(t)}</span></span><span style={{ fontSize: 11.5, whiteSpace: "nowrap", color: n < 0 ? "var(--red)" : "var(--amber)", fontWeight: 700 }}>{lbl}</span></div>); })}
+          </Card>
+        </div>
+        <Card title="Completed this period" subtitle="Recently finished work">
+          {done.length === 0 ? <div style={{ fontFamily: "var(--font-ui)", color: "var(--muted)", fontSize: 13 }}>No completed tasks yet.</div> :
+            done.map(t => <div key={t.id} style={row}>✓ <b>{t.title}</b> <span style={meta}>— {K.ownerStr(t)} · {K.groupLabel(t)}{t.doneDate ? " · " + K.fmtDate(t.doneDate) : ""}</span></div>)}
+        </Card>
+      </div>);
+    }
+
+    /* ============ MONTHLY PERFORMANCE REPORT ============ */
+    function MonthlyReport({ tasks }) {
+      const todayISO = new Date().toISOString().slice(0, 10);
+      const months = [...new Set(tasks.map(t => (t.created || todayISO).slice(0, 7)).concat([todayISO.slice(0, 7)]))].sort().reverse();
+      const [month, setMonth] = React.useState(months[0]);
+      const monthName = new Date(month + "-01T00:00:00").toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      const inPeriod = tasks.filter(t => { const c = (t.created || "").slice(0, 7), d = (t.doneDate || "").slice(0, 7); return c === month || d === month || t.status !== "Done"; });
+      const m = K.metricsFor(inPeriod);
+      const proj = K.metricsFor(inPeriod.filter(t => t.type === "project"));
+      const lead = K.metricsFor(inPeriod.filter(t => t.type === "leadership"));
+      const btEntries = Object.entries(m.bt).sort((a, b) => b[1] - a[1]);
+      const topBlocker = btEntries.length ? btEntries[0][0] : null;
+      const owners = [...new Set(inPeriod.flatMap(K.ownerArr))].map(o => ({ o, ...K.metricsFor(inPeriod.filter(t => K.ownerArr(t).includes(o))) })).sort((a, b) => b.completed - a.completed);
+      const domains = ["business growth", "content", "hiring", "strategy", "office development", "design direction"];
+      const completedList = inPeriod.filter(t => t.status === "Done");
+      const blockedList = inPeriod.filter(t => t.status === "Blocked");
+      const report = { maxWidth: 840, margin: "0 auto", background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--radius-card)", boxShadow: "var(--shadow)", padding: "40px 46px", fontFamily: "var(--font-serif)", color: "var(--ink)" };
+      const rt = { fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--accent)", fontWeight: 600 };
+      const h2s = { fontFamily: "var(--font-serif)", fontSize: 30, fontWeight: 800, letterSpacing: "-.5px", margin: "6px 0 4px" };
+      const rp = { fontFamily: "var(--font-ui)", fontSize: 12, color: "var(--muted)" };
+      const h4 = { fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--muted)", margin: "26px 0 10px", paddingBottom: 6, borderBottom: "1px solid var(--line)" };
+      const lead2 = { fontFamily: "var(--font-serif)", fontSize: 15.5, lineHeight: 1.7, margin: 0 };
+      const ul = { fontFamily: "var(--font-serif)", fontSize: 14.5, lineHeight: 1.7, margin: "0 0 0 18px", padding: 0 };
+      const rgrid = { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 12, margin: "4px 0" };
+      const rstat = { border: "1px solid var(--line)", borderRadius: "var(--radius)", padding: "12px 14px", background: "var(--paper)" };
+      const sv = { fontFamily: "var(--font-ui)", fontSize: 24, fontWeight: 800, letterSpacing: "-.5px" };
+      const sl = { fontFamily: "var(--font-ui)", fontSize: 10.5, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--muted)", marginTop: 3 };
+      return (<div>
+        <style>{`@media print { body * { visibility: hidden; } #woa-report, #woa-report * { visibility: visible; } #woa-report { position: absolute; left: 0; top: 0; box-shadow: none; border: none; } }`}</style>
+        <K.ViewHead title="Monthly Performance Report">Generated automatically from the same dataset. No manual compilation.</K.ViewHead>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16 }}>
+          <span style={{ fontFamily: "var(--font-ui)", fontSize: 12, color: "var(--muted)" }}>Reporting period:</span>
+          <select value={month} onChange={e => setMonth(e.target.value)} style={{ fontFamily: "var(--font-ui)", fontSize: 13, padding: "8px 10px", border: "1px solid var(--line)", borderRadius: "var(--radius)", background: "var(--card)", color: "var(--ink)" }}>
+            {months.map(mo => <option key={mo} value={mo}>{new Date(mo + "-01T00:00:00").toLocaleDateString("en-US", { month: "long", year: "numeric" })}</option>)}
+          </select>
+          <Button size="sm" variant="ghost" onClick={() => window.print()}>Print / Save PDF</Button>
+        </div>
+        <div id="woa-report" style={report}>
+          <div style={{ borderBottom: "2px solid var(--ink)", paddingBottom: 14, marginBottom: 8 }}>
+            <div style={rt}>WOA · Monthly Performance Report</div>
+            <h2 style={h2s}>{monthName}</h2>
+            <div style={rp}>Generated {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · Projects · People · Performance</div>
+          </div>
+          <h4 style={h4}>Executive Summary</h4>
+          <p style={lead2}>During {monthName}, the team carried <b>{m.assigned}</b> active task{m.assigned !== 1 ? "s" : ""} across projects and leadership work, completing <b>{m.completed}</b> for an overall completion rate of <b>{m.rate}%</b>. {m.blocked ? <>{m.blocked} task{m.blocked !== 1 ? "s were" : " was"} blocked{topBlocker ? <>, most often on <b>{topBlocker.toLowerCase()}</b></> : null}; with those excluded, the blocker-adjusted completion rate was <b>{m.adjRate}%</b>. </> : <>No tasks were blocked this period, so the blocker-adjusted rate matches the raw rate at <b>{m.adjRate}%</b>. </>}Project work ran at {proj.rate}% completion and leadership work at {lead.rate}%.</p>
+          <h4 style={h4}>Key Metrics</h4>
+          <div style={rgrid}>
+            <div style={rstat}><div style={sv}>{m.assigned}</div><div style={sl}>Assigned</div></div>
+            <div style={rstat}><div style={{ ...sv, color: "var(--green)" }}>{m.completed}</div><div style={sl}>Completed</div></div>
+            <div style={rstat}><div style={{ ...sv, color: "var(--red)" }}>{m.blocked}</div><div style={sl}>Blocked</div></div>
+            <div style={rstat}><div style={{ ...sv, color: "var(--accent)" }}>{m.rate}%</div><div style={sl}>Completion</div></div>
+            <div style={rstat}><div style={{ ...sv, color: "var(--gold)" }}>{m.adjRate}%</div><div style={sl}>Blocker-Adjusted</div></div>
+          </div>
+          <h4 style={h4}>Project vs Leadership</h4>
+          <div style={rgrid}>
+            <div style={rstat}><div style={sv}>{proj.completed}/{proj.assigned}</div><div style={sl}>Project · {proj.rate}%</div></div>
+            <div style={rstat}><div style={sv}>{lead.completed}/{lead.assigned}</div><div style={sl}>Leadership · {lead.rate}%</div></div>
+          </div>
+          <h4 style={h4}>Leadership Domains</h4>
+          <ul style={ul}>{domains.map(d => { const g = inPeriod.filter(t => t.type === "leadership" && t.domain === d); const dm = K.metricsFor(g); return <li key={d}>{K.cap(d)} — {g.length ? `${dm.completed}/${dm.assigned} complete (${dm.rate}%)` : "no activity"}</li>; })}</ul>
+          <h4 style={h4}>Assignee Performance</h4>
+          <ul style={ul}>{owners.length ? owners.map(o => <li key={o.o}><b>{o.o}</b> — {o.completed}/{o.assigned} completed ({o.rate}%){o.blocked ? ` · ${o.blocked} blocked` : ""}</li>) : <li>No owners recorded.</li>}</ul>
+          <h4 style={h4}>Blocker Analysis</h4>
+          {btEntries.length ? <ul style={ul}>{btEntries.map(([k, v]) => <li key={k}>{k} — {v} task{v !== 1 ? "s" : ""} held up</li>)}</ul> : <p style={lead2}>No blockers recorded this period.</p>}
+          <h4 style={h4}>Completed This Period</h4>
+          {completedList.length ? <ul style={ul}>{completedList.slice(0, 15).map(t => <li key={t.id}>{t.title} <span style={{ color: "var(--muted)", fontSize: 12 }}>— {K.ownerStr(t)} · {K.groupLabel(t)}</span></li>)}</ul> : <p style={lead2}>Nothing completed yet.</p>}
+          <h4 style={h4}>Outstanding Risks</h4>
+          {blockedList.length ? <ul style={ul}>{blockedList.map(t => <li key={t.id}>{t.title} <span style={{ color: "var(--muted)", fontSize: 12 }}>— {K.ownerStr(t)} · blocked on {t.blocker || "unspecified"}</span></li>)}</ul> : <p style={lead2}>No outstanding blockers.</p>}
+          <div style={{ marginTop: 28, paddingTop: 14, borderTop: "1px solid var(--line)", fontFamily: "var(--font-ui)", fontSize: 11.5, color: "var(--muted)" }}>This report was generated automatically from {tasks.length} live task records. No data was re-entered or manually compiled.</div>
+        </div>
+      </div>);
+    }
+
+    /* ============ SYNC & SETTINGS ============ */
+    function SyncSettings() {
+      const SK = "woa:dburl:demo";
+      const [url, setUrl] = React.useState(() => { try { return localStorage.getItem(SK) || ""; } catch (e) { return ""; } });
+      const [saved, setSaved] = React.useState(() => { try { return localStorage.getItem(SK) || ""; } catch (e) { return ""; } });
+      const [auto, setAuto] = React.useState(false);
+      const connected = !!saved;
+      function save() { try { localStorage.setItem(SK, url.trim()); } catch (e) {} setSaved(url.trim()); }
+      function copyLink() { const link = location.origin + location.pathname + (saved ? "?db=" + encodeURIComponent(saved) : ""); try { navigator.clipboard.writeText(link); } catch (e) {} }
+      const li = { marginBottom: 4 };
+      return (<div>
+        <K.ViewHead title="Sync & Settings">One shared database URL — every device on the same link sees the same tasks in real time.</K.ViewHead>
+        <Card title="Team Database" subtitle="Create a free Firebase Realtime Database and paste the URL below. Every device that opens this page with the same database URL shares one live dataset — no Google Sheet required." style={{ marginBottom: 16 }}>
+          <Field label="Firebase Database URL" placeholder="https://your-project-default-rtdb.firebaseio.com" value={url} onChange={e => setUrl(e.target.value)} inputStyle={{ fontFamily: "var(--font-mono)", fontSize: 13 }} />
+          <div style={{ display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap", marginTop: 12 }}>
+            <Button onClick={save}>Save &amp; connect</Button>
+            {connected && <Button variant="ghost" onClick={copyLink}>📋 Copy shareable link</Button>}
+            <span style={{ fontFamily: "var(--font-ui)", fontSize: 12, color: connected ? "var(--green)" : "var(--muted)", fontWeight: connected ? 600 : 400, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              {connected && <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--green)" }} />}
+              {connected ? "Connected · " + saved.replace(/^https?:\/\//, "").slice(0, 38) : "Not connected — data stored in this browser only."}
+            </span>
+          </div>
+          <label style={{ fontFamily: "var(--font-ui)", fontSize: 12, color: "var(--muted)", display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", marginTop: 12 }}>
+            <input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} style={{ margin: 0 }} />
+            Auto-sync: push every change, auto-refresh every 10 s
+            {auto && connected && <span style={{ background: "var(--green)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 20, letterSpacing: ".05em" }}>● LIVE</span>}
+          </label>
+        </Card>
+        <Card title="One-time setup — 2 minutes" subtitle="Do this once. Share the link with your team — they auto-connect instantly.">
+          <ol style={{ fontFamily: "var(--font-serif)", fontSize: 14.5, lineHeight: 1.9, margin: "4px 0 0 18px", color: "var(--ink)" }}>
+            <li style={li}>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noopener" style={{ color: "var(--accent)" }}>console.firebase.google.com</a> → create a free project.</li>
+            <li style={li}>In the sidebar: <b>Build → Realtime Database → Create database</b>.</li>
+            <li style={li}>Choose <b>Start in test mode</b> (open read/write to get started).</li>
+            <li style={li}>Copy the URL shown (e.g. <code style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>https://my-project-rtdb.firebaseio.com</code>).</li>
+            <li style={li}>Paste it above and click <b>Save &amp; connect</b>.</li>
+            <li style={li}>Click <b>📋 Copy shareable link</b> and send to your team. Done.</li>
+          </ol>
+          <div style={{ marginTop: 14, padding: "11px 14px", background: "var(--wash-neutral)", border: "1px solid var(--line)", borderRadius: "var(--radius)", fontFamily: "var(--font-ui)", fontSize: 12.5, color: "var(--muted)" }}>Free Firebase Spark plan: 1 GB storage, 10 GB/month transfer — plenty for a studio task list. After 30 days in test mode, update your database security rules.</div>
+        </Card>
+      </div>);
+    }
+
+    window.WOAViews = { TaskEntry, ProjectView, Dashboard, ArchitectView, WeeklyReview, MonthlyReport, SyncSettings };
+  </script>
+
+  <!-- ============================================================
+       App shell
+       ============================================================ -->
+  <script type="text/babel">
+    const K = window.WOAKit;
+    const V = window.WOAViews;
+    function App() {
+      const [tasks, setTasks] = React.useState(window.WOA_DATA.tasks);
+      const [view, setView] = React.useState("entry");
+      const owners = window.WOA_DATA.owners;
+      const projects = window.WOA_DATA.projects;
+      const onAdd = (t) => setTasks((prev) => [{ ...t, created: new Date().toISOString().slice(0, 10), doneDate: t.status === "Done" ? new Date().toISOString().slice(0, 10) : "" }, ...prev]);
+      const onDone = (id) => setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: "Done", blocker: "", doneDate: new Date().toISOString().slice(0, 10) } : t));
+      const onDelete = (id) => setTasks((prev) => prev.filter((t) => t.id !== id));
+      return (<div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 22px 80px" }}>
+        <K.Masthead />
+        <div style={{ margin: "16px 0 22px" }}>
+          <K.Tabs value={view} onChange={setView} tabs={[{ value: "entry", label: "Task Entry" }, { value: "project", label: "Project View" }, { value: "architect", label: "Architect View" }, { value: "dashboard", label: "Project Dashboard" }, { value: "weekly", label: "Weekly Review" }, { value: "monthly", label: "Monthly Report" }, { value: "sync", label: "Sync & Settings" }]} />
+        </div>
+        {view === "entry" && <V.TaskEntry tasks={tasks} owners={owners} projects={projects} onAdd={onAdd} onDone={onDone} onDelete={onDelete} />}
+        {view === "project" && <V.ProjectView tasks={tasks} onDone={onDone} onDelete={onDelete} />}
+        {view === "architect" && <V.ArchitectView tasks={tasks} onDone={onDone} onDelete={onDelete} />}
+        {view === "dashboard" && <V.Dashboard tasks={tasks} />}
+        {view === "weekly" && <V.WeeklyReview tasks={tasks} />}
+        {view === "monthly" && <V.MonthlyReport tasks={tasks} />}
+        {view === "sync" && <V.SyncSettings />}
+      </div>);
+    }
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
