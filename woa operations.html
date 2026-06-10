@@ -100,6 +100,21 @@
 </style>
 </head>
 <body>
+  <template id="__bundler_thumbnail" data-bg-color="#f4f1ea">
+    <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1200" height="800" fill="#f4f1ea"/>
+      <rect x="120" y="150" width="320" height="46" rx="6" fill="#1a1815"/>
+      <rect x="120" y="214" width="200" height="20" rx="4" fill="#b5491f"/>
+      <rect x="120" y="300" width="960" height="2" fill="#1a1815"/>
+      <rect x="120" y="340" width="220" height="86" rx="10" fill="#fffdf8" stroke="#ddd6c8" stroke-width="2"/>
+      <rect x="360" y="340" width="220" height="86" rx="10" fill="#fffdf8" stroke="#ddd6c8" stroke-width="2"/>
+      <rect x="600" y="340" width="220" height="86" rx="10" fill="#fffdf8" stroke="#ddd6c8" stroke-width="2"/>
+      <rect x="840" y="340" width="220" height="86" rx="10" fill="#fffdf8" stroke="#ddd6c8" stroke-width="2"/>
+      <rect x="148" y="362" width="80" height="14" rx="4" fill="#7a7468"/>
+      <rect x="148" y="388" width="46" height="24" rx="4" fill="#b5491f"/>
+      <rect x="120" y="470" width="940" height="200" rx="10" fill="#fffdf8" stroke="#ddd6c8" stroke-width="2"/>
+    </svg>
+  </template>
   <div id="root"></div>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -338,12 +353,11 @@
       </div>);
     }
 
-    function TaskEntry({ tasks, owners, projects, onAdd, onDone, onDelete }) {
+    function TaskEntry({ tasks, owners, projects, onAdd, onDone, onDelete, onAddPerson }) {
       const [workType, setWorkType] = React.useState("project");
       const [title, setTitle] = React.useState("");
       const [project, setProject] = React.useState(projects[0]);
       const [domain, setDomain] = React.useState("business growth");
-      const [people, setPeople] = React.useState(owners);
       const [assignees, setAssignees] = React.useState([owners[0]]);
       const [priority, setPriority] = React.useState("Medium");
       const [status, setStatus] = React.useState("To Do");
@@ -356,7 +370,7 @@
 
       function addPerson() {
         const name = window.prompt("New person's name");
-        if (name && name.trim()) { const n = name.trim(); setPeople(p => p.includes(n) ? p : [...p, n]); setAssignees(a => a.includes(n) ? a : [...a, n]); }
+        if (name && name.trim()) { const n = name.trim(); if (onAddPerson) onAddPerson(n); setAssignees(a => a.includes(n) ? a : [...a, n]); }
       }
       function submit() {
         if (!title.trim()) return;
@@ -382,7 +396,7 @@
             {workType === "project"
               ? <Field label="Project" as="select" value={project} onChange={e => setProject(e.target.value)}>{projects.map(p => <option key={p}>{p}</option>)}</Field>
               : <Field label="Leadership Domain" as="select" value={domain} onChange={e => setDomain(e.target.value)}>{["business growth","content","hiring","strategy","office development","design direction"].map(d => <option key={d}>{d}</option>)}</Field>}
-            <AssigneePicker people={people} value={assignees} onChange={setAssignees} onAddPerson={addPerson} />
+            <AssigneePicker people={owners} value={assignees} onChange={setAssignees} onAddPerson={addPerson} />
             <Field label="Priority" as="select" value={priority} onChange={e => setPriority(e.target.value)}><option>High</option><option>Medium</option><option>Low</option></Field>
             <Field label="Status" as="select" value={status} onChange={e => setStatus(e.target.value)}><option>To Do</option><option>In Progress</option><option>Blocked</option><option>Done</option></Field>
             <Field label="Due Date" type="date" value={due} onChange={e => setDue(e.target.value)} />
@@ -714,19 +728,26 @@
     const K = window.WOAKit;
     const V = window.WOAViews;
     function App() {
-      const [tasks, setTasks] = React.useState(window.WOA_DATA.tasks);
+      const LS = (key, fb) => { try { const r = localStorage.getItem(key); if (r) return JSON.parse(r); } catch (e) {} return fb; };
+      const today = () => new Date().toISOString().slice(0, 10);
+      const [tasks, setTasks] = React.useState(() => LS("woa:tasks:v1", window.WOA_DATA.tasks));
+      const [people, setPeople] = React.useState(() => LS("woa:people:v1", window.WOA_DATA.owners));
       const [view, setView] = React.useState("entry");
-      const owners = window.WOA_DATA.owners;
       const projects = window.WOA_DATA.projects;
-      const onAdd = (t) => setTasks((prev) => [{ ...t, created: new Date().toISOString().slice(0, 10), doneDate: t.status === "Done" ? new Date().toISOString().slice(0, 10) : "" }, ...prev]);
-      const onDone = (id) => setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: "Done", blocker: "", doneDate: new Date().toISOString().slice(0, 10) } : t));
+      React.useEffect(() => { try { localStorage.setItem("woa:tasks:v1", JSON.stringify(tasks)); } catch (e) {} }, [tasks]);
+      React.useEffect(() => { try { localStorage.setItem("woa:people:v1", JSON.stringify(people)); } catch (e) {} }, [people]);
+      const onAdd = (t) => setTasks((prev) => [{ ...t, created: today(), doneDate: t.status === "Done" ? today() : "" }, ...prev]);
+      const onDone = (id) => setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: "Done", blocker: "", doneDate: today() } : t));
       const onDelete = (id) => setTasks((prev) => prev.filter((t) => t.id !== id));
+      const onAddPerson = (name) => setPeople((prev) => prev.includes(name) ? prev : [...prev, name]);
+      const onReset = () => { if (window.confirm("Reset all tasks and people to the sample data? This clears your saved changes.")) { setTasks(window.WOA_DATA.tasks); setPeople(window.WOA_DATA.owners); } };
       return (<div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 22px 80px" }}>
         <K.Masthead />
-        <div style={{ margin: "16px 0 22px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, margin: "16px 0 22px", flexWrap: "wrap" }}>
           <K.Tabs value={view} onChange={setView} tabs={[{ value: "entry", label: "Task Entry" }, { value: "project", label: "Project View" }, { value: "architect", label: "Architect View" }, { value: "dashboard", label: "Project Dashboard" }, { value: "weekly", label: "Weekly Review" }, { value: "monthly", label: "Monthly Report" }, { value: "sync", label: "Sync & Settings" }]} />
+          <button onClick={onReset} title="Reset to sample data" style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--muted)", background: "transparent", border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "5px 10px", cursor: "pointer" }}>Reset demo</button>
         </div>
-        {view === "entry" && <V.TaskEntry tasks={tasks} owners={owners} projects={projects} onAdd={onAdd} onDone={onDone} onDelete={onDelete} />}
+        {view === "entry" && <V.TaskEntry tasks={tasks} owners={people} projects={projects} onAdd={onAdd} onDone={onDone} onDelete={onDelete} onAddPerson={onAddPerson} />}
         {view === "project" && <V.ProjectView tasks={tasks} onDone={onDone} onDelete={onDelete} />}
         {view === "architect" && <V.ArchitectView tasks={tasks} onDone={onDone} onDelete={onDelete} />}
         {view === "dashboard" && <V.Dashboard tasks={tasks} />}
