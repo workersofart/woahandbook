@@ -17,6 +17,140 @@
       This page requires JavaScript to display.
     </div>
   </noscript>
+
+<script id="woa-firebase-sync-patch">
+(function() {
+  // ── WOA Firebase Sync Patch ──────────────────────────────────────────────
+  // Fixes: Firebase URL is stored but never used. Tasks only live in localStorage.
+  // Fix:   Intercept localStorage writes → mirror to Firebase REST API (PUT).
+  //        On page load → fetch from Firebase first (synchronously via XHR)
+  //        so React useState() sees the latest shared data.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  var TASKS_KEY  = "woa:tasks:v1";
+  var PEOPLE_KEY = "woa:people:v1";
+  var URL_KEY    = "woa:dburl:demo";
+
+  function getDbUrl() {
+    try {
+      var params = new URLSearchParams(location.search);
+      var fromParam = params.get("db");
+      if (fromParam) {
+        // Persist so refresh works without the ?db= param
+        window._woa_origSetItem(URL_KEY, fromParam);
+        return fromParam.replace(/\/+$/, "");
+      }
+      return (localStorage.getItem(URL_KEY) || "").replace(/\/+$/, "");
+    } catch(e) { return ""; }
+  }
+
+  // Keep a reference to the real setItem before we patch it
+  window._woa_origSetItem = localStorage.setItem.bind(localStorage);
+
+  // ── Sync writes to Firebase ──────────────────────────────────────────────
+  function fbPutAsync(dbUrl, fbKey, value) {
+    if (!dbUrl) return;
+    try {
+      fetch(dbUrl + "/" + fbKey + ".json", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: value  // already a JSON string
+      }).catch(function(e) { console.warn("[WOA Sync] PUT failed:", e); });
+    } catch(e) {}
+  }
+
+  // ── Patch setItem to mirror WOA data keys to Firebase ───────────────────
+  localStorage.setItem = function(key, value) {
+    window._woa_origSetItem(key, value);
+    if (key === TASKS_KEY || key === PEOPLE_KEY) {
+      var dbUrl = getDbUrl();
+      if (dbUrl) {
+        var fbKey = key === TASKS_KEY ? "woa_tasks_v1" : "woa_people_v1";
+        fbPutAsync(dbUrl, fbKey, value);
+      }
+    }
+  };
+
+  // ── Load from Firebase synchronously BEFORE React boots ─────────────────
+  // React's useState() initialiser runs synchronously on first render.
+  // We must pre-populate localStorage before that happens.
+  // Synchronous XHR is the only way to do this without changing React code.
+  function loadFromFirebaseSync() {
+    var dbUrl = getDbUrl();
+    if (!dbUrl) return;
+
+    function fetchSync(url) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, false);  // false = synchronous
+        xhr.send();
+        if (xhr.status === 200) {
+          var data = JSON.parse(xhr.responseText);
+          return Array.isArray(data) ? data : null;
+        }
+      } catch(e) { console.warn("[WOA Sync] Sync GET failed:", e); }
+      return null;
+    }
+
+    var tasks  = fetchSync(dbUrl + "/woa_tasks_v1.json");
+    var people = fetchSync(dbUrl + "/woa_people_v1.json");
+
+    if (tasks)  { window._woa_origSetItem(TASKS_KEY,  JSON.stringify(tasks));  console.log("[WOA Sync] Loaded", tasks.length, "tasks from Firebase"); }
+    if (people) { window._woa_origSetItem(PEOPLE_KEY, JSON.stringify(people)); console.log("[WOA Sync] Loaded", people.length, "people from Firebase"); }
+  }
+
+  // Run immediately — script executes before React scripts load
+  loadFromFirebaseSync();
+
+  // ── Auto-refresh poll (when Auto-sync checkbox is checked) ───────────────
+  var _pollTimer = null;
+  function setupPoll() {
+    if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+    try {
+      var isAuto = localStorage.getItem("woa:autosync:v1") === "true";
+      if (!isAuto) return;
+      var dbUrl = getDbUrl();
+      if (!dbUrl) return;
+
+      _pollTimer = setInterval(function() {
+        try {
+          var xhr1 = new XMLHttpRequest();
+          xhr1.open("GET", dbUrl + "/woa_tasks_v1.json", true);
+          xhr1.onload = function() {
+            if (xhr1.status === 200) {
+              try {
+                var t = JSON.parse(xhr1.responseText);
+                if (Array.isArray(t)) {
+                  window._woa_origSetItem(TASKS_KEY, JSON.stringify(t));
+                  window.dispatchEvent(new StorageEvent("storage", { key: TASKS_KEY, newValue: JSON.stringify(t) }));
+                }
+              } catch(e) {}
+            }
+          };
+          xhr1.send();
+
+          var xhr2 = new XMLHttpRequest();
+          xhr2.open("GET", dbUrl + "/woa_people_v1.json", true);
+          xhr2.onload = function() {
+            if (xhr2.status === 200) {
+              try {
+                var p = JSON.parse(xhr2.responseText);
+                if (Array.isArray(p)) window._woa_origSetItem(PEOPLE_KEY, JSON.stringify(p));
+              } catch(e) {}
+            }
+          };
+          xhr2.send();
+        } catch(e) {}
+      }, 10000);
+    } catch(e) {}
+  }
+
+  // Expose so SyncSettings checkbox can trigger it
+  window.__woaSyncPatchSetupPoll = setupPoll;
+
+  console.log("[WOA Sync] Firebase sync patch installed. DB URL:", getDbUrl() || "(none)");
+})();
+</script>
 </head>
 <body>
   <div id="__bundler_thumbnail">
