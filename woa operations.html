@@ -205,7 +205,24 @@ document.addEventListener('DOMContentLoaded', async function() {
               }
         }
 
-        /* Poll every 1 second to detect people changes and sync to Firebase */
+        function fbGet() {
+            var db = localStorage.getItem(DB_LS_KEY);
+            if (!db) return;
+            fetch(db + FB_KEY + '.json')
+                .then(function(r) { return r.ok ? r.text() : null; })
+                .then(function(val) {
+                    if (val && val !== 'null') {
+                        localStorage.setItem(PEOPLE_KEY, val);
+                        _last = val;
+                    }
+                })
+                .catch(function() {});
+        }
+
+        /* On load: pull latest from Firebase so a new device gets current data */
+        fbGet();
+
+                /* Poll every 1 second to detect people changes and sync to Firebase */
         setInterval(check, 1000);
         console.log('[WOA fix] People polling sync active');
     })();
