@@ -6,14 +6,14 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a0a; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-    #__bundler_loading { position: fixed; bottom: 20px; right: 20px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; color: #666; background: #fff; padding: 8px 14px; border-radius: 8px; }
+    #__bundler_loading { position: fixed; bottom: 20px; right: 20px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; color: #666; background: #fff; padding: 8px 14px; border-radius: 8[...]
     #__bundler_thumbnail { position: fixed; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #0a0a0a; z-index: 9999; }
     #__bundler_thumbnail svg { width: 100%; height: 100%; object-fit: contain; }
     #__bundler_placeholder { color: #999; font-size: 14px; }
   </style>
   <noscript>
     <style>#__bundler_loading { display: none; }</style>
-    <div style="position:fixed;bottom:12px;left:12px;font:13px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;color:#999;background:rgba(255,255,255,0.9);padding:6px 12px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">
+    <div style="position:fixed;bottom:12px;left:12px;font:13px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;color:#999;background:rgba(255,255,255,0.9);padding:6px 12px;border-radius:6px;box-sh[...]
       This page requires JavaScript to display.
     </div>
   </noscript>
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     var p = document.body || document.documentElement;
     var d = document.getElementById('__bundler_err') || p.appendChild(document.createElement('div'));
     d.id = '__bundler_err';
-    d.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;font:12px/1.4 ui-monospace,monospace;background:#2a1215;color:#ff8a80;padding:10px 14px;border-radius:8px;border:1px solid #5f2828;z-index:9998;max-height:200px;overflow:auto';
+    d.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;font:12px/1.4 ui-monospace,monospace;background:#2a1215;color:#ff8a80;padding:10px 14px;border-radius:8px;border:1px solid #5[...]
     d.textContent = (d.textContent ? d.textContent + String.fromCharCode(10) : '') +
       '[bundle] ' + (e.message || e.type) +
       (e.filename ? ' (' + e.filename.slice(0, 60) + ':' + e.lineno + ')' : '');
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       if ((s.type === 'text/babel' || s.type === 'text/jsx') && s.src) {
         const r = await fetch(s.src);
         s.textContent = await r.text();
-        s.removeAttribute('src');
+        s.removeAttribute('src');  
       }
       const p = s.src ? new Promise(function(r) { s.onload = s.onerror = r; }) : null;
       old.replaceWith(s);
@@ -177,90 +177,69 @@ document.addEventListener('DOMContentLoaded', async function() {
 "<!DOCTYPE html>\n<html><head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\n\n<script src=\"01f7d180-6906-4397-98a1-5b67ef73b426\"><\u002[...]
   </script>
   <script>
-    /* IMPROVED FIX: Detect assignee changes immediately + pull latest from Firebase on load */
+    /* fix: people/assignee changes now persist to Firebase via polling */
     (function() {
         var PEOPLE_KEY = 'woa:people:v1';
         var FB_KEY = 'woa_people_v1';
         var DB_LS_KEY = 'woa:dburl:demo';
         var _last = null;
         var _timer = null;
-        var _syncing = false;
 
-        function syncToFirebase(val) {
-            if (_syncing || !val) return;
-            _syncing = true;
-            var db = localStorage.getItem(DB_LS_KEY);
-            if (!db) {
-                _syncing = false;
-                return;
-            }
-            window.__woaLastWrite = Date.now();
-            fetch(db + FB_KEY + '.json', {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: val
-            })
-            .then(function(r) {
-                if (r.ok) {
-                    console.log('[WOA] ✓ Assignee synced to Firebase');
-                } else {
-                    console.error('[WOA] Firebase sync failed:', r.status, r.statusText);
-                }
-            })
-            .catch(function(err) {
-                console.error('[WOA] Firebase sync error:', err);
-            })
-            .finally(function() {
-                _syncing = false;
-            });
+        function fbPut(val) {
+              var db = localStorage.getItem(DB_LS_KEY);
+              if (!db || !val) return;
+              window.__woaLastWrite = Date.now();
+              fetch(db + FB_KEY + '.json', {
+                      method: 'PUT',
+                      headers: {'Content-Type': 'application/json'},
+                      body: val
+              }).catch(function() {});
         }
 
-        function checkAndSync() {
-            var cur = localStorage.getItem(PEOPLE_KEY);
-            if (cur && cur !== _last) {
-                _last = cur;
-                clearTimeout(_timer);
-                _timer = setTimeout(function() {
-                    syncToFirebase(cur);
-                }, 300);
-            }
+        function check() {
+              var cur = localStorage.getItem(PEOPLE_KEY);
+              if (cur && cur !== _last) {
+                      _last = cur;
+                      clearTimeout(_timer);
+                      _timer = setTimeout(function() { fbPut(cur); }, 300);
+              }
         }
 
-        function pullFromFirebase() {
-            var db = localStorage.getItem(DB_LS_KEY);
-            if (!db) return;
-            fetch(db + FB_KEY + '.json')
-                .then(function(r) { return r.ok ? r.text() : null; })
-                .then(function(val) {
-                    if (val && val !== 'null') {
-                        localStorage.setItem(PEOPLE_KEY, val);
-                        _last = val;
-                        console.log('[WOA] ✓ Loaded latest data from Firebase');
-                    }
-                })
-                .catch(function(err) {
-                    console.warn('[WOA] Failed to pull from Firebase:', err);
-                });
-        }
-
-        // On load: pull latest from Firebase so device gets current data
-        setTimeout(pullFromFirebase, 100);
-
-        // Poll every 500ms to detect people changes and sync to Firebase
-        setInterval(checkAndSync, 500);
-
-        // Also listen for direct select/input changes (bypass localStorage lag)
-        setTimeout(function() {
-            document.addEventListener('change', function(e) {
-                if (e.target && (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT')) {
-                    console.log('[WOA] Change detected:', e.target.name || e.target.id);
-                    setTimeout(checkAndSync, 50);
-                }
-            }, true);
-        }, 2000);
-
-        console.log('[WOA] Firebase assignee sync initialized ✓');
+        /* Poll every 1 second to detect people changes and sync to Firebase */
+        setInterval(check, 1000);
+        console.log('[WOA fix] People polling sync active');
     })();
   </script>
-</body>
-</html>
+
+<!-- WOA 4-row slider enhancement for Project & Assigned To dropdowns -->
+<script>
+(function(){
+function init(){
+var prev=document.getElementById('woa-slider-style'); if(prev) prev.remove();
+var style=document.createElement('style'); style.id='woa-slider-style';
+style.textContent='.woa-cust-dd{position:relative;width:100%;font:inherit;}.woa-cust-trigger{width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;backgro[...]
+document.head.appendChild(style);
+function enhance(sel){ if(!sel||sel.dataset.woaEnhanced) return; sel.dataset.woaEnhanced='1'; sel.style.display='none';
+var wrap=document.createElement('div'); wrap.className='woa-cust-dd';
+var trigger=document.createElement('button'); trigger.type='button'; trigger.className='woa-cust-trigger';
+var labelSpan=document.createElement('span'); labelSpan.className='woa-cust-label';
+var caret=document.createElement('span'); caret.className='woa-caret'; caret.textContent='\u25be';
+trigger.appendChild(labelSpan); trigger.appendChild(caret);
+var panel=document.createElement('div'); panel.className='woa-cust-panel';
+function syncLabel(){ var o=sel.options[sel.selectedIndex]; labelSpan.textContent=o?o.textContent.trim():''; }
+function buildOpts(){ panel.innerHTML=''; Array.prototype.forEach.call(sel.options,function(o,idx){ var d=document.createElement('div'); d.className='woa-cust-opt'+(idx===sel.selectedIndex?' sel'[...]
+function open(){ document.querySelectorAll('.woa-cust-dd.open').forEach(function(d){ if(d!==wrap) d.classList.remove('open'); }); buildOpts(); wrap.classList.add('open'); }
+function close(){ wrap.classList.remove('open'); }
+trigger.addEventListener('click',function(e){ e.stopPropagation(); wrap.classList.contains('open')?close():open(); });
+var mo=new MutationObserver(function(){ syncLabel(); if(wrap.classList.contains('open')) buildOpts(); }); mo.observe(sel,{childList:true,subtree:true,attributes:true});
+sel.addEventListener('change',syncLabel);
+wrap.appendChild(trigger); wrap.appendChild(panel); sel.parentNode.insertBefore(wrap,sel.nextSibling); syncLabel(); }
+if(!window.__woaDDClose){ window.__woaDDClose=true; document.addEventListener('click',function(){ document.querySelectorAll('.woa-cust-dd.open').forEach(function(d){ d.classList.remove('open'); }[...]
+function scan(){ var selects=Array.prototype.slice.call(document.querySelectorAll('select')); var projectSel=selects.filter(function(s){ return Array.prototype.some.call(s.options,function(o){ret[...]
+scan(); var bodyMo=new MutationObserver(function(){ scan(); }); bodyMo.observe(document.body,{childList:true,subtree:true});
+}
+if(document.readyState==='complete'){ setTimeout(init,1000); } else { window.addEventListener('load',function(){ setTimeout(init,1000); }); }
+})();
+</script>
+</body>html>
+  </script>
