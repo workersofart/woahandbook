@@ -27,21 +27,19 @@
     <line x1="80" y1="172" x2="320" y2="172" stroke="#232323" stroke-width="1.5"></line>
     <text x="200" y="190" font-family="sans-serif" font-size="9" fill="#8a8a8a" text-anchor="middle" letter-spacing="3">PROJECTS · PEOPLE · PERFORMANCE</text>
   </svg>
-</div>
+  </div>
   <div id="__bundler_loading">Unpacking...</div>
 
   <script>
-    
 document.addEventListener('DOMContentLoaded', async function() {
   const loading = document.getElementById('__bundler_loading');
   function setStatus(msg) { if (loading) loading.textContent = msg; }
 
-  // Error sink persists across replaceWith since it's on window, not the DOM.
   window.addEventListener('error', function(e) {
     var p = document.body || document.documentElement;
     var d = document.getElementById('__bundler_err') || p.appendChild(document.createElement('div'));
     d.id = '__bundler_err';
-    d.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;font:12px/1.4 ui-monospace,monospace;background:#2a1215;color:#ff8a80;padding:10px 14px;border-radius:8px;border:1px solid #5f2828;z-index:9998;max-height:200px;overflow:auto';
+    d.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;font:12px/1.4 ui-monospace,monospace;background:#2a1215;color:#ff8a80;padding:10px 14px;border-radius:8px;border:1px solid #5f2828;z-index:9998';
     d.textContent = (d.textContent ? d.textContent + String.fromCharCode(10) : '') +
       '[bundle] ' + (e.message || e.type) +
       (e.filename ? ' (' + e.filename.slice(0, 60) + ':' + e.lineno + ')' : '');
@@ -52,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const templateEl = document.querySelector('script[type="__bundler/template"]');
     if (!manifestEl || !templateEl) {
       setStatus('Error: missing bundle data');
-      console.error('[bundler] Missing script tags — manifestEl:', !!manifestEl, 'templateEl:', !!templateEl);
+      console.error('[bundler] Missing script tags');
       return;
     }
 
@@ -111,29 +109,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     setStatus('Rendering...');
     for (const uuid of uuids) template = template.split(uuid).join(blobUrls[uuid]);
 
-    // Strip integrity + crossorigin — blob URLs from a file:// document inherit
-    // a null origin, so crossorigin forces a CORS fetch that SRI then rejects.
-    // The manifest bytes are ours; SRI protects against CDN compromise, not this.
     template = template.replace(/\s+integrity="[^"]*"/gi, '').replace(/\s+crossorigin="[^"]*"/gi, '');
 
     const resourceScript = '<script>window.__resources = ' +
       JSON.stringify(resourceMap).split('</' + 'script>').join('<\\/' + 'script>') +
       ';</' + 'script>';
-    // Inject after <head> so the DOCTYPE stays first; prepending the script
-    // would push the parser into quirks mode. DOMParser always emits a <head>
-    // (synthesizing one if the source HTML omitted it) but may carry
-    // attributes through, so match the full opening tag. slice() rather than
-    // replace() keeps us clear of $-pattern substitution in resourceScript.
     const headOpen = template.match(/<head[^>]*>/i);
     if (headOpen) {
       const i = headOpen.index + headOpen[0].length;
       template = template.slice(0, i) + resourceScript + template.slice(i);
     }
 
-    // Parse the template and swap the root element. Scripts inserted via
-    // DOMParser/replaceWith are inert per spec — re-create each with
-    // createElement so they execute, awaiting onload for src scripts to
-    // preserve ordering (React before ReactDOM before Babel before text/babel).
     const doc = new DOMParser().parseFromString(template, 'text/html');
     document.documentElement.replaceWith(doc.documentElement);
     const dead = Array.from(document.scripts);
@@ -141,10 +127,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       const s = document.createElement('script');
       for (const a of old.attributes) s.setAttribute(a.name, a.value);
       s.textContent = old.textContent;
-      // text/babel scripts with a src: fetch and inline. transformScriptTags
-      // does XHR against the src, but blob:null/ from a file:// origin is
-      // silently dropped. Inlining makes it a plain inline babel script,
-      // which transformScriptTags handles unconditionally.
       if ((s.type === 'text/babel' || s.type === 'text/jsx') && s.src) {
         const r = await fetch(s.src);
         s.textContent = await r.text();
@@ -154,8 +136,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       old.replaceWith(s);
       if (p) await p;
     }
-    // Babel standalone auto-transforms type=text/babel on DOMContentLoaded,
-    // which fired before we swapped the document. Trigger manually if present.
     if (window.Babel && typeof window.Babel.transformScriptTags === 'function') {
       window.Babel.transformScriptTags();
     }
@@ -164,17 +144,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.error('Bundle unpack error:', err);
   }
 });
-
   </script>
 
-  <script type="__bundler/manifest">{"01a11628-f1b8-4437-8f9d-736328331885":{"mime":"image/png","compressed":false,"data":"iVBORw0KGgoAAAANSUhEUgAABwkAAASwCAYAAAAAIHU9AAAACXBIWXMAAAsTAAALEwEAmpwY[...]
+  <script type="__bundler/manifest">{"01a11628-f1b8-4437-8f9d-736328331885":{"mime":"image/png","compressed":false,"data":"iVBORw0KGgoAAAANSUhEUgAABwkAAASwCAYAAAAAIHU9AAAACXBIWXMAAAsTAAALEwEAmpwY"}}</script>
 
   <script type="__bundler/ext_resources">
 [{"id":"woaLogo","uuid":"01a11628-f1b8-4437-8f9d-736328331885"}]
   </script>
 
   <script type="__bundler/template">
-"<!DOCTYPE html>\n<html><head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\n\n<script src=\"01f7d180-6906-4397-98a1-5b67ef73b426\"><\u002[...]
+"<!DOCTYPE html>\n<html><head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>WOA Operations</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif}</style></head><body><div id=\"root\"></div><script src=\"https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js\"><\/script><script src=\"https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js\"><\/script><script src=\"https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js\"><\/script></body></html>"
   </script>
 </body>
 </html>
