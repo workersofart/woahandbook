@@ -210,6 +210,67 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('[WOA fix] People polling sync active');
     })();
   </script>
+<script>
+/* fix: project register changes now persist to Firebase + localStorage via polling and hydration */
+(function() {
+    var PROJECTS_KEY = 'woa:projects:v1';
+    var TASKS_KEY = 'woa:tasks:v1';
+    var FB_PROJECTS = 'woa_projects_v1';
+    var FB_TASKS = 'woa_tasks_v1';
+    var DB_LS_KEY = 'woa:dburl:demo';
+    var _lastProjects = null;
+    var _lastTasks = null;
+    var _timerP = null;
+    var _timerT = null;
+
+    function fbPut(fbKey, val) {
+        var db = localStorage.getItem(DB_LS_KEY);
+        if (!db || !val) return;
+        window.__woaLastWrite = Date.now();
+        fetch(db + fbKey + '.json', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: val
+        }).catch(function() {});
+    }
+
+    function fbGet(fbKey, lsKey) {
+        var db = localStorage.getItem(DB_LS_KEY);
+        if (!db) return;
+        fetch(db + fbKey + '.json').then(function(r) {
+            return r.ok ? r.text() : null;
+        }).then(function(text) {
+            if (text && text !== 'null' && !localStorage.getItem(lsKey)) {
+                localStorage.setItem(lsKey, text);
+            }
+        }).catch(function() {});
+    }
+
+    function check() {
+        var curP = localStorage.getItem(PROJECTS_KEY);
+        if (curP && curP !== _lastProjects) {
+            _lastProjects = curP;
+            clearTimeout(_timerP);
+            _timerP = setTimeout(function() { fbPut(FB_PROJECTS, curP); }, 300);
+        }
+        var curT = localStorage.getItem(TASKS_KEY);
+        if (curT && curT !== _lastTasks) {
+            _lastTasks = curT;
+            clearTimeout(_timerT);
+            _timerT = setTimeout(function() { fbPut(FB_TASKS, curT); }, 300);
+        }
+    }
+
+    /* Hydrate on load from Firebase if localStorage is empty */
+    document.addEventListener('DOMContentLoaded', function() {
+        fbGet(FB_PROJECTS, PROJECTS_KEY);
+        fbGet(FB_TASKS, TASKS_KEY);
+    });
+
+    setInterval(check, 1000);
+    console.log('[WOA fix] Projects + Tasks polling sync active');
+})();
+</script>
 
 <!-- WOA 4-row slider enhancement for Project & Assigned To dropdowns -->
 <script>
