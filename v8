@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     (function() {
         var PEOPLE_KEY = 'woa:people:v1';
         var FB_KEY = 'woa_people_v1';
-        var DB_LS_KEY = 'woa:dburl:demo';
+        var DB_LS_KEY = ' :demo';
         var _last = null;
         var _timer = null;
 
